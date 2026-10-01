@@ -113,7 +113,7 @@ const seed = db.transaction(() => {
     todayId,
     partner,
     4,
-    "Mine is sealed and waiting. Answer yours and this opens.",
+    "Ten more minutes at the table after dinner, phones in the other room. Just us, talking like we did in August.",
     `${today} 08:42:00`,
   );
 

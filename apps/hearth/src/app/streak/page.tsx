@@ -75,7 +75,9 @@ export default async function StreakPage() {
         <p className="mt-3 text-xs font-medium text-gold-deep">
           {streak.graceLeft
             ? "One grace day rests in the hearth if life happens."
-            : "Grace is spent. Show up today to protect the flame."}
+            : streak.todayComplete
+              ? "Grace is spent, and you both showed up today. The flame is safe."
+              : "Grace is spent. Both answers today keep the flame alive."}
         </p>
       </section>
 

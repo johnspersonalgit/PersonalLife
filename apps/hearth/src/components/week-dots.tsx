@@ -43,8 +43,8 @@ function Dot({ state }: { state: WeekDot["state"] }) {
       );
     case "grace":
       return (
-        <span className={`${base} border-flame-soft bg-flame-soft`}>
-          <FlameIcon size={13} className="text-flame" />
+        <span className={`${base} border-flame bg-flame-soft/60`}>
+          <FlameIcon size={13} className="text-flame-deep" />
         </span>
       );
     case "missed":
