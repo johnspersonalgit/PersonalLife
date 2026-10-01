@@ -1,4 +1,5 @@
 import db from "./db";
+import { walkStreak } from "./streak";
 import { localDay, shiftDay } from "./time";
 
 export type AnswerView = {
@@ -22,6 +23,7 @@ export type StreakView = {
   current: number;
   best: number;
   graceLeft: boolean;
+  graceDays: string[];
   todayComplete: boolean;
 };
 
@@ -50,8 +52,6 @@ type AnswerRow = {
   text: string;
   created_at: string;
 };
-
-const GRACE_WINDOW_DAYS = 7;
 
 function hashString(s: string): number {
   let h = 0;
@@ -182,41 +182,22 @@ export function getStreak(coupleId: number, today: string = localDay()): StreakV
     .all(coupleId) as { day: string; answered: number }[];
   const byDay = new Map(rows.map((r) => [r.day, r.answered >= n]));
 
-  let current = 0;
-  const graceUsedAt: string[] = [];
-  let cursor = today;
+  const first = db
+    .prepare("SELECT MIN(day) AS first FROM days WHERE couple_id = ?")
+    .get(coupleId) as { first: string | null };
 
-  const todayComplete = byDay.get(today) === true;
-  if (todayComplete) {
-    current += 1;
-  }
-  cursor = shiftDay(today, -1);
-
-  while (byDay.has(cursor)) {
-    if (byDay.get(cursor)) {
-      current += 1;
-    } else {
-      const recentGraces = graceUsedAt.filter(
-        (g) => shiftDay(cursor, GRACE_WINDOW_DAYS) > g,
-      ).length;
-      if (recentGraces === 0) {
-        graceUsedAt.push(cursor);
-      } else {
-        break;
-      }
-    }
-    cursor = shiftDay(cursor, -1);
-  }
+  const walk = walkStreak(byDay, first.first, today);
 
   const meta = db
     .prepare("SELECT best FROM streak_meta WHERE couple_id = ?")
     .get(coupleId) as { best: number } | undefined;
 
   return {
-    current,
-    best: Math.max(meta?.best ?? 0, current),
-    graceLeft: graceUsedAt.length === 0,
-    todayComplete,
+    current: walk.current,
+    best: Math.max(meta?.best ?? 0, walk.current),
+    graceLeft: walk.graceDays.length === 0,
+    graceDays: walk.graceDays,
+    todayComplete: walk.todayComplete,
   };
 }
 
@@ -258,6 +239,7 @@ export type WeekDot = {
 export function weekStatus(coupleId: number, today: string = localDay()): WeekDot[] {
   const days = getRecentDays(coupleId, 14);
   const byDay = new Map(days.map((d) => [d.day, d.complete]));
+  const graceDays = new Set(getStreak(coupleId, today).graceDays);
   const dots: WeekDot[] = [];
   const labels = ["S", "M", "T", "W", "T", "F", "S"];
   for (let i = 6; i >= 0; i--) {
@@ -268,8 +250,8 @@ export function weekStatus(coupleId: number, today: string = localDay()): WeekDo
       state = byDay.get(today) ? "today-done" : "today-open";
     } else if (byDay.get(day) === true) {
       state = "done";
-    } else if (byDay.get(day) === false) {
-      state = "missed";
+    } else if (graceDays.has(day)) {
+      state = "grace";
     } else {
       state = "missed";
     }
