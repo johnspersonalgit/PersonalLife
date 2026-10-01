@@ -1,0 +1,4 @@
+{
+  "name": "personal-apps",
+  "install": "if [ -f package.json ]; then npm install; fi"
+}

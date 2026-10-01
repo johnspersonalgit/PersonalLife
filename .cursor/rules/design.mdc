@@ -1,0 +1,50 @@
+---
+description: Design bar for every surface in this repo
+alwaysApply: true
+---
+
+# Design bar
+
+Design is a trust signal. Cheap or generic screens fail before the content gets a chance. Every surface ships with Quiet Luxury discipline: one coherent palette, editorial type, generous negative space, intentional motion.
+
+## Per-app foundation (decide once, then stop)
+
+When an app is created, define and lock its tokens before building screens:
+
+1. One palette as named tokens: ground, surface, line, ink, ink-soft, one accent with hover and soft variants, destructive. No raw hex inside components. Default taste direction: warm neutral ground, ink type, one metallic accent. Restraint over decoration.
+2. One type system: a display face for headlines, a neutral UI face for body and controls, mono only for codes and numbers. Never Inter or an IDE-default face as the brand type.
+3. 4px/8px spacing grid. Every margin, padding, and gap lands on it.
+4. One radius family (sm, md, lg steps). One icon set at one stroke weight. Shadows communicate elevation only; no glow borders.
+5. Every interactive element reacts: hover, focus-visible, active or disabled, accessible name, keyboard path, deterministic no-op or confirmation. Reduced motion keeps the state change without the flourish.
+
+## Tell list (automatic fail)
+
+Audit the after-screenshots against this list in the same turn:
+
+- Purple-to-blue gradients
+- Inter or any generic AI-default face as the brand type
+- Centered hero with a little badge above the headline
+- Exactly three feature cards as the page
+- Cards with colored left-border strips as the design system
+- Dark mode by default with glowing borders
+- Generic IDE or SaaS grey-on-white
+- Accent color present in tokens but invisible on screen
+- Clipped, truncated, or overflowing type left as shipped
+- Mixed colorways on one surface
+- Dead duplicate copy that restates something already on screen
+- Placeholder copy or fabricated data presented as real
+
+## Visual pass (mandatory)
+
+A passing test suite is not a visual pass. For any UI change:
+
+1. Before: open the live surface, screenshot desktop and the smallest relevant mobile viewport, and name what is wrong in the pixels.
+2. During: screenshot after each material visual edit. If hierarchy, contrast, clipping, or palette is still wrong, keep going.
+3. After: screenshot the finished path end to end the way John would use it. Audit against the tell list.
+4. Self-correct in the same turn. Never ask John to coach contrast, cutoff, or palette.
+
+## Inspo, not paste
+
+- Before authoring a net-new interactive pattern, search Mobbin and 21st.dev for real shipped implementations of the same job (onboarding, inbox, search, settings). Adapt; never paste. Record what was adopted and from where in the app's README.
+- Material new experiences: prepare up to three comparable directions with the same information architecture, recommend one, and get John's pick before production hardening.
+- Third-party code is reviewed and adapted: no remote runtime code, trackers, fonts, images, analytics, or API calls from a source. License-check assets before use.
