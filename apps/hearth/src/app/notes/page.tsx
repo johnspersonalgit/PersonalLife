@@ -1,0 +1,69 @@
+import { redirect } from "next/navigation";
+import { getNotes } from "@/lib/repo";
+import { getPartner, getSessionMember } from "@/lib/session";
+import { prettyTime } from "@/lib/time";
+import { NoteComposer } from "@/components/note-composer";
+import { TabBar } from "@/components/tab-bar";
+
+export const dynamic = "force-dynamic";
+
+export default async function NotesPage() {
+  const member = await getSessionMember();
+  if (!member) redirect("/onboarding");
+  const partner = getPartner(member);
+  const notes = getNotes(member.coupleId);
+
+  return (
+    <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-5 pt-6 pb-28">
+      <header className="mb-4">
+        <h1 className="font-display text-3xl text-ink">Notes</h1>
+        <p className="mt-1 text-sm text-ink-soft">
+          For everything that does not fit a question. No reply needed.
+        </p>
+      </header>
+
+      <div className="flex flex-1 flex-col gap-3">
+        {notes.length === 0 ? (
+          <div className="card p-5 text-sm text-ink-soft">
+            Nothing passed yet. The first note is the hardest.
+          </div>
+        ) : (
+          notes.map((n) => {
+            const mine = n.memberId === member.id;
+            return (
+              <div
+                key={n.id}
+                className={`flex flex-col ${mine ? "items-end" : "items-start"}`}
+              >
+                <div
+                  className={`max-w-[85%] rounded-lg border px-4 py-3 ${
+                    mine
+                      ? "border-gold-soft bg-gold-soft/20"
+                      : "border-line bg-card"
+                  }`}
+                >
+                  <p className="text-sm leading-relaxed text-ink">{n.text}</p>
+                </div>
+                <span className="mt-1 px-1 text-[10px] tracking-wide text-ink-soft">
+                  {n.memberName} · {prettyTime(n.createdAt)}
+                </span>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      <div className="sticky bottom-20 mt-6">
+        {partner ? (
+          <NoteComposer partnerName={partner.name} />
+        ) : (
+          <div className="card p-4 text-sm text-ink-soft">
+            Notes open once your person joins with your code.
+          </div>
+        )}
+      </div>
+
+      <TabBar active="/notes" />
+    </main>
+  );
+}
