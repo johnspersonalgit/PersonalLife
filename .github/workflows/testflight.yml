@@ -37,10 +37,34 @@ jobs:
 
       - name: Install App Store Connect API key
         run: |
+          set -euo pipefail
           mkdir -p "$HOME/private_keys" "$HOME/.private_keys" "$HOME/.appstoreconnect/private_keys"
-          printf '%s\n' "$ASC_API_KEY_P8" > "$HOME/private_keys/AuthKey_${ASC_KEY_ID}.p8"
-          cp "$HOME/private_keys/AuthKey_${ASC_KEY_ID}.p8" "$HOME/.private_keys/AuthKey_${ASC_KEY_ID}.p8"
-          cp "$HOME/private_keys/AuthKey_${ASC_KEY_ID}.p8" "$HOME/.appstoreconnect/private_keys/AuthKey_${ASC_KEY_ID}.p8"
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          raw = os.environ["ASC_API_KEY_P8"].strip()
+          if (raw.startswith('"') and raw.endswith('"')) or (raw.startswith("'") and raw.endswith("'")):
+              raw = raw[1:-1].strip()
+          raw = raw.replace("\r\n", "\n").replace("\r", "\n")
+          raw = raw.replace("\\n", "\n")
+          if "BEGIN" not in raw:
+              body = "".join(raw.split())
+              raw = "-----BEGIN PRIVATE KEY-----\n" + body + "\n-----END PRIVATE KEY-----"
+          if "BEGIN PRIVATE KEY" not in raw:
+              raise SystemExit("ASC_API_KEY_P8 is not a .p8 PEM. Re-paste the file including the BEGIN/END PRIVATE KEY lines.")
+          key_id = os.environ["ASC_KEY_ID"].strip()
+          name = f"AuthKey_{key_id}.p8"
+          text = raw if raw.endswith("\n") else raw + "\n"
+          for folder in (
+              Path.home() / "private_keys",
+              Path.home() / ".private_keys",
+              Path.home() / ".appstoreconnect" / "private_keys",
+          ):
+              dest = folder / name
+              dest.write_text(text, encoding="ascii")
+              dest.chmod(0o600)
+          print("wrote", name, "pem_ok")
+          PY
         env:
           ASC_API_KEY_P8: ${{ secrets.ASC_API_KEY_P8 }}
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
