@@ -7,7 +7,7 @@ import { BackIcon } from "@/components/icons";
 import { MoodFace } from "@/components/mood-row";
 import { TabBar } from "@/components/tab-bar";
 import { KIND_CHIP } from "@/components/today-card";
-import { getEchoes, getLessonById } from "@/lib/repo";
+import { getEchoes, getLessonById, getThread } from "@/lib/repo";
 import { getPartner, getSessionMember } from "@/lib/session";
 import { prettyDay } from "@/lib/time";
 
@@ -27,6 +27,8 @@ export default async function QuestPage({
   const lesson = getLessonById(member.coupleId, dayId);
   if (!lesson) notFound();
   const echoes = getEchoes(lesson.id);
+  const thread = getThread(member.coupleId, lesson);
+  const parent = thread.length > 1 ? thread[thread.length - 2] : null;
   const mine = lesson.answers.find((a) => a.memberId === member.id);
   const theirs = partner
     ? lesson.answers.find((a) => a.memberId === partner.id)
@@ -48,7 +50,25 @@ export default async function QuestPage({
         </span>
         <span className="chip">{lesson.category}</span>
         <span className={`chip ${KIND_CHIP[lesson.kind]}`}>{lesson.kind}</span>
+        {lesson.depth > 0 ? (
+          <span className="chip border-ink bg-blue text-card">
+            Layer {lesson.depth}
+          </span>
+        ) : null}
       </header>
+
+      {parent ? (
+        <Link
+          href={`/quest/${parent.id}`}
+          className="card px-4 py-3 text-sm leading-snug text-ink-soft"
+          data-thread-parent=""
+        >
+          <span className="text-[10px] font-extrabold tracking-[0.16em] uppercase text-ink-soft">
+            Deeper than
+          </span>
+          <span className="mt-1 block text-ink">{parent.prompt}</span>
+        </Link>
+      ) : null}
 
       <section className="card flex flex-col gap-3 p-5" data-quest-review="">
         <h1 className="font-display text-2xl leading-snug text-ink">

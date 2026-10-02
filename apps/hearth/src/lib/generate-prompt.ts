@@ -57,10 +57,32 @@ export function parseGeneratedQuest(
   };
 }
 
+function deeperPrompt(
+  categories: string[],
+  avoid: string,
+  input: {
+    followUpTo?: string;
+    thread?: string[];
+    deeper?: boolean;
+  },
+): string {
+  const allowed = `Allowed categories: ${categories.join(", ")}.`;
+  const skip = `Do not repeat:\n${avoid || "- (none yet)"}`;
+  if (input.deeper && input.thread?.length) {
+    return `${allowed}\nThis thread already asked:\n${input.thread.map((t) => `- ${t}`).join("\n")}\nWrite one tighter, more specific question that goes one layer deeper into the same thread. Do not guess their answers. ${skip}`;
+  }
+  if (input.followUpTo) {
+    return `${allowed}\nWrite one follow-up that goes a layer deeper than this quest, without repeating it and without guessing their answers:\n${input.followUpTo}\n${skip}`;
+  }
+  return `${allowed}\nWrite one new question they can answer in a sentence.\n${skip}`;
+}
+
 export async function generateQuestPrompt(input: {
   categories: string[];
   recentTexts: string[];
   followUpTo?: string;
+  thread?: string[];
+  deeper?: boolean;
 }): Promise<GeneratedQuest | null> {
   const key = openaiApiKey();
   if (!key) return null;
@@ -93,9 +115,7 @@ export async function generateQuestPrompt(input: {
           },
           {
             role: "user",
-            content: input.followUpTo
-              ? `Allowed categories: ${categories.join(", ")}.\nWrite one follow-up question to this quest, without repeating it and without guessing their answers:\n${input.followUpTo}\nDo not repeat:\n${avoid || "- (none yet)"}`
-              : `Allowed categories: ${categories.join(", ")}.\nWrite one new question they can answer in a sentence.\nDo not repeat:\n${avoid || "- (none yet)"}`,
+            content: deeperPrompt(categories, avoid, input),
           },
         ],
       }),

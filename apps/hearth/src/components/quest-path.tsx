@@ -3,6 +3,12 @@ import { calendarDayOf, isCalendarDay } from "@/lib/lesson-keys";
 import { canActOnLesson, iDidMyPart } from "@/lib/lesson-progress";
 import type { DayView, WeekDot } from "@/lib/repo";
 import type { Member } from "@/lib/session";
+import {
+  isChestDepth,
+  pathSection,
+  pathUnit,
+  startLabel,
+} from "@/lib/thread";
 import { Ember } from "./ember";
 import {
   BookIcon,
@@ -75,6 +81,7 @@ export function QuestPath({
   member,
   partner,
   coupleCode,
+  combo,
 }: {
   today: DayView;
   current: DayView;
@@ -83,6 +90,7 @@ export function QuestPath({
   member: Member;
   partner: Member | null;
   coupleCode: string;
+  combo: number;
 }) {
   const myAnswer = current.answers.find((a) => a.memberId === member.id);
   const partnerAnswer = partner
@@ -94,7 +102,11 @@ export function QuestPath({
   const extra = !isCalendarDay(current.day);
 
   let caption = CATEGORY_TITLE[current.category] ?? "Today's tiny quest";
-  if (extra && open) {
+  if (extra && open && isChestDepth(current.depth)) {
+    caption = "Chest. The thread just got thicker.";
+  } else if (extra && open && current.depth > 0) {
+    caption = "Same thread. One layer down.";
+  } else if (extra && open) {
     caption = "Keep going. Another tiny quest.";
   } else if (!myAnswer && partnerAnswer) {
     caption = `${person} sealed an answer. Yours unlocks it.`;
@@ -154,7 +166,9 @@ export function QuestPath({
       id: current.day,
       lessonId: current.id,
       state: "current" as const,
-      icon: ICONS[(past.length + visibleDone.length) % ICONS.length],
+      icon: isChestDepth(current.depth)
+        ? "chest"
+        : ICONS[(past.length + visibleDone.length) % ICONS.length],
     },
     ...locked,
   ];
@@ -174,7 +188,8 @@ export function QuestPath({
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-[11px] font-extrabold tracking-[0.16em] text-card/80 uppercase">
-                Section 1, Unit 1
+                Section {pathSection(combo)}, Unit {pathUnit(combo)}
+                {current.depth > 0 ? ` · Layer ${current.depth}` : ""}
               </p>
               <h1
                 id="today-heading"
@@ -211,8 +226,9 @@ export function QuestPath({
 
           {nodes.map((node, i) => {
             const pos = positions[i];
-            const current = node.state === "current";
+            const isCurrent = node.state === "current";
             const emberRight = pos.x <= 50;
+            const label = startLabel(current.depth);
             return (
               <div
                 key={node.id}
@@ -221,17 +237,23 @@ export function QuestPath({
               >
                 <div
                   className="relative -translate-x-1/2 -translate-y-1/2"
-                  data-current-node={current ? "true" : undefined}
+                  data-current-node={isCurrent ? "true" : undefined}
                   data-today-node={node.id === today.day ? "true" : undefined}
                 >
-                  {current ? (
+                  {isCurrent ? (
                     <div
                       className={`absolute top-[-8px] z-10 ${
                         emberRight ? "left-[86px]" : "right-[86px]"
                       }`}
                     >
                       <Ember
-                        mood={partnerAnswer && open ? "worried" : "happy"}
+                        mood={
+                          partnerAnswer && open
+                            ? "worried"
+                            : combo >= 3
+                              ? "celebrate"
+                              : "happy"
+                        }
                         size={88}
                       />
                     </div>
@@ -250,34 +272,41 @@ export function QuestPath({
                       <PathNode
                         state={node.state}
                         icon={node.icon}
-                        current={current}
+                        current={isCurrent}
                       />
                     </Link>
                   ) : (
                     <PathNode
                       state={node.state}
                       icon={node.icon}
-                      current={current}
+                      current={isCurrent}
                     />
                   )}
 
-                  {current && open ? (
+                  {isCurrent && open ? (
                     <Link
                       href="/answer"
-                      className="start-bubble"
-                      aria-label="START"
+                      className={`start-bubble${
+                        label === "CHEST"
+                          ? " start-bubble-chest"
+                          : label === "DEEPER"
+                            ? " start-bubble-deeper"
+                            : ""
+                      }`}
+                      aria-label={label}
+                      data-start-label={label}
                     >
-                      START
+                      {label}
                     </Link>
                   ) : null}
 
-                  {current && waiting && partner ? (
+                  {isCurrent && waiting && partner ? (
                     <div className="absolute top-[86px] left-1/2 z-10 w-52 -translate-x-1/2">
                       <NudgeButton partnerName={partner.name} />
                     </div>
                   ) : null}
 
-                  {current && waiting && !partner ? (
+                  {isCurrent && waiting && !partner ? (
                     <p className="absolute top-[86px] left-1/2 z-10 -translate-x-1/2 rounded-full border-[3px] border-ink bg-card px-4 py-2 font-mono text-sm tracking-[0.2em] text-ink shadow-[0_4px_0_#1f2a55]">
                       {coupleCode}
                     </p>

@@ -30,6 +30,24 @@ async function tapNav(label) {
   await tap(page.locator('nav[aria-label="Primary"]').getByText(label, { exact: true }));
 }
 
+function startLink() {
+  return page.getByRole("link", { name: /^(START|DEEPER|CHEST)$/ });
+}
+
+async function walkQuestionLesson(sentence) {
+  await tap(page.getByRole("button", { name: "Continue" }));
+  await page.waitForSelector("text=How are you arriving");
+  await tap(page.getByRole("button", { name: /Good/ }));
+  await tap(page.getByRole("button", { name: "Continue" }));
+  await page.waitForSelector("text=Which is closer");
+  await tap(page.locator("[data-lesson-choice]").first());
+  await page.waitForSelector("text=One word for today");
+  await tap(page.locator("[data-lesson-chip]").first());
+  await page.waitForSelector("text=One short sentence");
+  await page.locator("textarea").fill(sentence);
+  await tap(page.getByRole("button", { name: "Seal my answer" }));
+}
+
 async function step(name, fn) {
   try {
     await fn();
@@ -73,34 +91,16 @@ await step("03 home as John", async () => {
 });
 
 await step("04 answer form", async () => {
-  await tap(page.getByRole("link", { name: "START" }));
+  await tap(startLink());
   await page.waitForSelector("text=Today's quest");
   await settle();
   await shot("hearth-04-answer-form");
 });
 
 await step("05 celebration", async () => {
-  await tap(page.getByRole("button", { name: "Continue" }));
-  await page.waitForSelector("text=How are you arriving");
-  await settle();
-  await shot("hearth-04b-mood");
-  await tap(page.getByRole("button", { name: /Good/ }));
-  await tap(page.getByRole("button", { name: "Continue" }));
-  await page.waitForSelector("text=Which is closer");
-  await settle();
-  await shot("hearth-04c-closer");
-  await tap(page.locator("[data-lesson-choice]").first());
-  await page.waitForSelector("text=One word for today");
-  await settle();
-  await shot("hearth-04d-spark");
-  await tap(page.locator("[data-lesson-chip]").first());
-  await page.waitForSelector("text=One short sentence");
-  await settle();
-  await shot("hearth-04e-write");
-  await page.locator("textarea").fill(
+  await walkQuestionLesson(
     "Long day but a good one. Your note this morning carried the 3pm meeting. Porch photos looked perfect.",
   );
-  await tap(page.getByRole("button", { name: "Seal my answer" }));
   await page.waitForURL("**/celebration**");
   await settle(2600);
   await shot("hearth-05-celebration");
@@ -109,25 +109,36 @@ await step("05 celebration", async () => {
 await step("06 home revealed", async () => {
   await tap(page.getByRole("link", { name: "Continue" }));
   await page.waitForSelector("text=Ten more minutes at the table");
-  await page.waitForSelector("text=START");
+  await page.waitForSelector("text=Same thread. One layer down.");
+  await page.waitForSelector('[data-start-label="DEEPER"]');
   await settle();
   await shot("hearth-06-home-revealed");
 });
 
 await step("06b keep going", async () => {
-  await tap(page.getByRole("link", { name: "START" }));
-  await page.waitForSelector("text=Today's quest");
+  await tap(startLink());
+  await page.waitForSelector("text=Same thread");
   await page.waitForSelector("[data-lesson-prompt]");
+  await page.waitForSelector("[data-from-prompt]");
   const extraPrompt = (
     await page.locator("[data-lesson-prompt]").innerText()
   ).trim();
   fs.writeFileSync(`${OUT}/hearth_generated_extra.txt`, extraPrompt);
   await settle();
   await shot("hearth-06b-keep-going");
-  await tap(page.getByLabel("Back to today"));
-  await page.waitForSelector("text=START");
+  await walkQuestionLesson("That porch light still counts. One layer deeper.");
+  await page.waitForURL("**/combo**");
+  await page.waitForSelector("[data-combo-page]");
+  await settle(1800);
+  await shot("hearth-06c-combo");
+});
+
+await step("06c next layer", async () => {
+  await tap(page.getByRole("link", { name: /Go deeper|Continue|Open the chest/ }));
+  await page.waitForSelector('[data-combo]');
+  await page.waitForSelector('[data-start-label="DEEPER"]');
   await settle();
-  await shot("hearth-06c-next-start");
+  await shot("hearth-06d-next-deeper");
 });
 
 await step("07 journal", async () => {

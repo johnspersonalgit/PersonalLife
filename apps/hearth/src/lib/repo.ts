@@ -9,6 +9,7 @@ import {
 import { iDidMyPart } from "./lesson-progress";
 import { choosePrompt } from "./pick-prompt";
 import { isDayComplete, walkStreak, type PromptKind } from "./streak";
+import { nextDepth } from "./thread";
 import { shiftDay } from "./time";
 import { localDay } from "./today";
 
@@ -44,6 +45,8 @@ export type DayView = {
   answers: AnswerView[];
   guesses: GuessView[];
   complete: boolean;
+  parentId: number | null;
+  depth: number;
 };
 
 export type StreakView = {
@@ -73,6 +76,8 @@ type DayRow = {
   kind: PromptKind;
   options: string | null;
   answerer_id: number | null;
+  parent_id: number | null;
+  depth: number;
 };
 
 type AnswerRow = {
@@ -185,6 +190,8 @@ function toDayView(row: DayRow, memberCount: number): DayView {
     answers,
     guesses,
     complete: isDayComplete(row.kind, answers.length, guesses.length, memberCount),
+    parentId: row.parent_id ?? null,
+    depth: row.depth ?? 0,
   };
 }
 
@@ -243,9 +250,8 @@ function insertGeneratedPrompt(quest: {
   return Number(row.lastInsertRowid);
 }
 
-async function pickExtraPromptId(coupleId: number): Promise<number | null> {
-  const cats = coupleCategories(coupleId);
-  const recent = (
+function recentPromptTexts(coupleId: number): string[] {
+  return (
     db
       .prepare(
         `SELECT p.text FROM days d JOIN prompts p ON p.id = d.prompt_id
@@ -253,9 +259,39 @@ async function pickExtraPromptId(coupleId: number): Promise<number | null> {
       )
       .all(coupleId) as { text: string }[]
   ).map((r) => r.text);
+}
+
+export function getThread(coupleId: number, lesson: DayView): DayView[] {
+  const chain: DayView[] = [lesson];
+  let parentId = lesson.parentId;
+  let guard = 0;
+  while (parentId && guard < 12) {
+    const parent = getLessonById(coupleId, parentId);
+    if (!parent) break;
+    chain.unshift(parent);
+    parentId = parent.parentId;
+    guard += 1;
+  }
+  return chain;
+}
+
+function threadPrompts(coupleId: number, lesson: DayView): string[] {
+  return getThread(coupleId, lesson).map((item) => item.prompt);
+}
+
+async function pickDeeperPromptId(
+  coupleId: number,
+  parent: DayView | null,
+): Promise<number | null> {
+  const cats = coupleCategories(coupleId);
+  const recent = recentPromptTexts(coupleId);
+  const thread = parent ? threadPrompts(coupleId, parent) : [];
   const generated = await generateQuestPrompt({
-    categories: cats,
+    categories: cats.length ? cats : parent ? [parent.category] : [],
     recentTexts: recent,
+    followUpTo: parent?.prompt,
+    thread,
+    deeper: Boolean(parent),
   });
   if (!generated) return null;
   return insertGeneratedPrompt(generated);
@@ -266,6 +302,7 @@ export function ensureDay(
   day: string,
   preferKind?: PromptKind,
   promptId?: number,
+  parentId?: number,
 ): DayView {
   const existing = db
     .prepare("SELECT 1 FROM days WHERE couple_id = ? AND day = ?")
@@ -300,15 +337,30 @@ export function ensureDay(
         answererId = members[pastGuessDays.n % members.length].id;
       }
     }
+    const parentDepth =
+      parentId != null
+        ? (
+            db
+              .prepare("SELECT depth FROM days WHERE id = ? AND couple_id = ?")
+              .get(parentId, coupleId) as { depth: number } | undefined
+          )?.depth
+        : undefined;
     db.prepare(
-      "INSERT INTO days (couple_id, day, prompt_id, answerer_id) VALUES (?, ?, ?, ?)",
-    ).run(coupleId, day, picked.id, answererId);
+      "INSERT INTO days (couple_id, day, prompt_id, answerer_id, parent_id, depth) VALUES (?, ?, ?, ?, ?, ?)",
+    ).run(
+      coupleId,
+      day,
+      picked.id,
+      answererId,
+      parentId ?? null,
+      nextDepth(parentDepth ?? (parentId != null ? 0 : -1)),
+    );
   } else if (isCalendarDay(day)) {
     rewriteUnansweredFirstDay(coupleId, day);
   }
   const row = db
     .prepare(
-      `SELECT d.id, d.day, p.category, p.text AS prompt, p.kind, p.options, d.answerer_id
+      `SELECT d.id, d.day, d.parent_id, d.depth, p.category, p.text AS prompt, p.kind, p.options, d.answerer_id
        FROM days d JOIN prompts p ON p.id = d.prompt_id
        WHERE d.couple_id = ? AND d.day = ?`,
     )
@@ -319,7 +371,7 @@ export function ensureDay(
 export function getDay(coupleId: number, day: string): DayView | null {
   const row = db
     .prepare(
-      `SELECT d.id, d.day, p.category, p.text AS prompt, p.kind, p.options, d.answerer_id
+      `SELECT d.id, d.day, d.parent_id, d.depth, p.category, p.text AS prompt, p.kind, p.options, d.answerer_id
        FROM days d JOIN prompts p ON p.id = d.prompt_id
        WHERE d.couple_id = ? AND d.day = ?`,
     )
@@ -330,7 +382,7 @@ export function getDay(coupleId: number, day: string): DayView | null {
 export function getRecentDays(coupleId: number, limit = 60): DayView[] {
   const rows = db
     .prepare(
-      `SELECT d.id, d.day, p.category, p.text AS prompt, p.kind, p.options, d.answerer_id
+      `SELECT d.id, d.day, d.parent_id, d.depth, p.category, p.text AS prompt, p.kind, p.options, d.answerer_id
        FROM days d JOIN prompts p ON p.id = d.prompt_id
        WHERE d.couple_id = ? ORDER BY d.day DESC LIMIT ?`,
     )
@@ -342,7 +394,7 @@ export function getRecentDays(coupleId: number, limit = 60): DayView[] {
 export function getLessons(coupleId: number): DayView[] {
   const rows = db
     .prepare(
-      `SELECT d.id, d.day, p.category, p.text AS prompt, p.kind, p.options, d.answerer_id
+      `SELECT d.id, d.day, d.parent_id, d.depth, p.category, p.text AS prompt, p.kind, p.options, d.answerer_id
        FROM days d JOIN prompts p ON p.id = d.prompt_id
        WHERE d.couple_id = ? ORDER BY d.day ASC`,
     )
@@ -362,15 +414,28 @@ export async function ensureOpenLesson(
   );
   const open = todayLessons.find((l) => !iDidMyPart(l, memberId));
   if (open) return open;
+  const parent =
+    [...todayLessons].reverse().find((l) => iDidMyPart(l, memberId)) ?? null;
   const nextSeq =
     todayLessons.reduce((max, l) => Math.max(max, lessonSeq(l.day)), 0) + 1;
-  const generatedId = await pickExtraPromptId(coupleId);
+  const generatedId = await pickDeeperPromptId(coupleId, parent);
   return ensureDay(
     coupleId,
     lessonKey(today, nextSeq),
     "question",
     generatedId ?? undefined,
+    parent?.id,
   );
+}
+
+export function sessionCombo(
+  coupleId: number,
+  memberId: number,
+  today: string = localDay(),
+): number {
+  return getLessons(coupleId).filter(
+    (l) => calendarDayOf(l.day) === today && iDidMyPart(l, memberId),
+  ).length;
 }
 
 export function getLessonById(
@@ -379,7 +444,7 @@ export function getLessonById(
 ): DayView | null {
   const row = db
     .prepare(
-      `SELECT d.id, d.day, p.category, p.text AS prompt, p.kind, p.options, d.answerer_id
+      `SELECT d.id, d.day, d.parent_id, d.depth, p.category, p.text AS prompt, p.kind, p.options, d.answerer_id
        FROM days d JOIN prompts p ON p.id = d.prompt_id
        WHERE d.couple_id = ? AND d.id = ?`,
     )
@@ -467,6 +532,7 @@ export function replayLesson(
     nextExtraKey(coupleId, today),
     source.kind,
     prompt.prompt_id,
+    source.id,
   );
 }
 
@@ -490,6 +556,8 @@ export async function followUpLesson(
     categories: cats.length ? cats : [source.category],
     recentTexts: recent,
     followUpTo: source.prompt,
+    thread: threadPrompts(coupleId, source),
+    deeper: true,
   });
   const promptId = generated ? insertGeneratedPrompt(generated) : null;
   return ensureDay(
@@ -497,6 +565,7 @@ export async function followUpLesson(
     nextExtraKey(coupleId, today),
     "question",
     promptId ?? undefined,
+    source.id,
   );
 }
 

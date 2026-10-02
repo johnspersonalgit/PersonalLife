@@ -27,6 +27,8 @@ type LessonProps = {
   options: string[];
   role: "answerer" | "guesser" | "solo";
   personName: string;
+  depth?: number;
+  fromPrompt?: string | null;
 };
 
 type QuestionStep = "intro" | "mood" | "closer" | "spark" | "write";
@@ -41,6 +43,8 @@ export function QuestLesson({
   options,
   role,
   personName,
+  depth = 0,
+  fromPrompt = null,
 }: LessonProps) {
   switch (kind) {
     case "question":
@@ -49,6 +53,8 @@ export function QuestLesson({
           prompt={prompt}
           category={category}
           personName={personName}
+          depth={depth}
+          fromPrompt={fromPrompt}
         />
       );
     case "rapid":
@@ -70,10 +76,14 @@ function QuestionLesson({
   prompt,
   category,
   personName,
+  depth,
+  fromPrompt,
 }: {
   prompt: string;
   category: string;
   personName: string;
+  depth: number;
+  fromPrompt: string | null;
 }) {
   const steps: QuestionStep[] = ["intro", "mood", "closer", "spark", "write"];
   const [step, setStep] = useState<QuestionStep>("intro");
@@ -93,7 +103,13 @@ function QuestionLesson({
       {step === "intro" ? (
         <Intro
           prompt={prompt}
-          blurb={`Five tiny taps. About a minute. ${personName} cannot see yours until they finish too.`}
+          blurb={
+            depth > 0
+              ? `Same thread. Layer ${depth}. Five tiny taps, then the next node grows out of this one.`
+              : `Five tiny taps. About a minute. ${personName} cannot see yours until they finish too.`
+          }
+          eyebrow={depth > 0 ? "Same thread" : "Today's quest"}
+          fromPrompt={fromPrompt}
           onContinue={() => setStep("mood")}
         />
       ) : null}
@@ -383,16 +399,25 @@ function Intro({
   prompt,
   blurb,
   onContinue,
+  eyebrow = "Today's quest",
+  fromPrompt = null,
 }: {
   prompt: string;
   blurb: string;
   onContinue: () => void;
+  eyebrow?: string;
+  fromPrompt?: string | null;
 }) {
   return (
     <div className="flex flex-1 flex-col">
       <p className="mt-2 text-sm font-semibold tracking-widest text-ink-soft uppercase">
-        Today&apos;s quest
+        {eyebrow}
       </p>
+      {fromPrompt ? (
+        <p className="mt-2 text-sm leading-snug text-ink-soft" data-from-prompt="">
+          Deeper than: {fromPrompt}
+        </p>
+      ) : null}
       <h1
         className="mt-2 font-display text-3xl leading-snug text-ink"
         data-lesson-prompt=""

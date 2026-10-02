@@ -30,6 +30,8 @@ CREATE TABLE IF NOT EXISTS days (
   day TEXT NOT NULL,
   prompt_id INTEGER NOT NULL REFERENCES prompts(id),
   answerer_id INTEGER REFERENCES members(id),
+  parent_id INTEGER REFERENCES days(id),
+  depth INTEGER NOT NULL DEFAULT 0,
   UNIQUE(couple_id, day)
 );
 

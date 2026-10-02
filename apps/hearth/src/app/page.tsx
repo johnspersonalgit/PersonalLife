@@ -6,6 +6,7 @@ import {
   ensureOpenLesson,
   getLessons,
   getStreak,
+  sessionCombo,
   unseenNudgesFor,
   weekStatus,
 } from "@/lib/repo";
@@ -32,6 +33,7 @@ export default async function Home() {
   const lessons = getLessons(member.coupleId);
   const streak = getStreak(member.coupleId);
   const week = weekStatus(member.coupleId);
+  const combo = sessionCombo(member.coupleId, member.id);
   const nudges = unseenNudgesFor(member.id, member.coupleId);
 
   const couple = db
@@ -50,6 +52,11 @@ export default async function Home() {
             <HeartIcon size={12} />
             {streak.graceLeft ? 1 : 0}
           </span>
+          {combo > 0 ? (
+            <span className="chip border-ink bg-blue text-card" data-combo="">
+              x{combo}
+            </span>
+          ) : null}
         </div>
         <div className="flex items-center gap-2">
           <div className="flex items-center -space-x-2">
@@ -92,6 +99,7 @@ export default async function Home() {
         member={member}
         partner={partner}
         coupleCode={couple.code}
+        combo={combo}
       />
 
       {today.complete ? (

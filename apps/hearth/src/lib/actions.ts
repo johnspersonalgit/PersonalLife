@@ -16,6 +16,7 @@ import {
   getStreak,
   recordBest,
   replayLesson,
+  sessionCombo,
   MILESTONES,
   type DayView,
 } from "./repo";
@@ -185,6 +186,8 @@ async function finishLesson(member: Member, lesson: DayView): Promise<never> {
   const streak = getStreak(member.coupleId, today);
   recordBest(member.coupleId, streak.current);
   await ensureOpenLesson(member.coupleId, member.id, today);
+  const combo = sessionCombo(member.coupleId, member.id, today);
+  const latest = getLessonById(member.coupleId, lesson.id) ?? lesson;
 
   let milestone: number | null = null;
   if (isCalendarDay(lesson.day) && streak.todayComplete) {
@@ -198,7 +201,7 @@ async function finishLesson(member: Member, lesson: DayView): Promise<never> {
 
   revalidatePath("/");
   if (!isCalendarDay(lesson.day)) {
-    redirect("/");
+    redirect(`/combo?c=${combo}&d=${latest.depth}`);
   }
   redirect(
     `/celebration?s=${streak.current}${milestone ? `&m=${milestone}` : ""}`,

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ensureOpenLesson } from "@/lib/repo";
+import { ensureOpenLesson, getLessonById } from "@/lib/repo";
 import { getPartner, getSessionMember } from "@/lib/session";
 import { BackIcon } from "@/components/icons";
 import { QuestLesson } from "@/components/quest-lesson";
@@ -20,6 +20,9 @@ export default async function AnswerPage() {
   if (!member) redirect("/onboarding");
   const partner = getPartner(member);
   const lesson = await ensureOpenLesson(member.coupleId, member.id);
+  const parent = lesson.parentId
+    ? getLessonById(member.coupleId, lesson.parentId)
+    : null;
 
   const myAnswer = lesson.answers.find((a) => a.memberId === member.id);
   const myGuess = lesson.guesses.find((g) => g.memberId === member.id);
@@ -56,6 +59,11 @@ export default async function AnswerPage() {
         <span className={`chip ${KIND_CHIP[lesson.kind]}`}>
           {KIND_LABELS[lesson.kind]}
         </span>
+        {lesson.depth > 0 ? (
+          <span className="chip border-ink bg-blue text-card">
+            Layer {lesson.depth}
+          </span>
+        ) : null}
       </header>
 
       {alreadyDone ? (
@@ -72,6 +80,8 @@ export default async function AnswerPage() {
           options={lesson.options}
           role={role}
           personName={partner?.name ?? "your person"}
+          depth={lesson.depth}
+          fromPrompt={parent?.prompt ?? null}
         />
       )}
     </main>

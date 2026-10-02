@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --experimental-strip-types scripts/test-streak.mjs && node --experimental-strip-types scripts/test-reminders.mjs && node --experimental-strip-types scripts/test-first-day.mjs && node --experimental-strip-types scripts/test-lesson-beats.mjs && node --experimental-strip-types scripts/test-lesson-keys.mjs && node --experimental-strip-types scripts/test-keep-going.mjs && node --experimental-strip-types scripts/test-generate-prompt.mjs"
+    "test": "node --experimental-strip-types scripts/test-streak.mjs && node --experimental-strip-types scripts/test-reminders.mjs && node --experimental-strip-types scripts/test-first-day.mjs && node --experimental-strip-types scripts/test-lesson-beats.mjs && node --experimental-strip-types scripts/test-lesson-keys.mjs && node --experimental-strip-types scripts/test-keep-going.mjs && node --experimental-strip-types scripts/test-generate-prompt.mjs && node --experimental-strip-types scripts/test-thread.mjs"
   },
   "dependencies": {
     "@capacitor/core": "^8.5.2",

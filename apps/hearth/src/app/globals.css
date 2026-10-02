@@ -273,6 +273,24 @@ body {
   box-shadow: 0 5px 0 var(--color-ink);
 }
 
+.start-bubble-deeper {
+  background: var(--color-blue);
+  color: #fff8f0;
+}
+
+.start-bubble-deeper::before {
+  background: var(--color-blue);
+}
+
+.start-bubble-chest {
+  background: var(--color-honey);
+  color: var(--color-ink);
+}
+
+.start-bubble-chest::before {
+  background: var(--color-honey);
+}
+
 .start-bubble::before {
   content: "";
   position: absolute;

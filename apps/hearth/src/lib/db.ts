@@ -79,6 +79,12 @@ const dayCols = db.prepare("PRAGMA table_info(days)").all() as {
 if (!dayCols.some((c) => c.name === "answerer_id")) {
   db.exec("ALTER TABLE days ADD COLUMN answerer_id INTEGER REFERENCES members(id)");
 }
+if (!dayCols.some((c) => c.name === "parent_id")) {
+  db.exec("ALTER TABLE days ADD COLUMN parent_id INTEGER REFERENCES days(id)");
+}
+if (!dayCols.some((c) => c.name === "depth")) {
+  db.exec("ALTER TABLE days ADD COLUMN depth INTEGER NOT NULL DEFAULT 0");
+}
 
 const insertPrompt = db.prepare(
   `INSERT INTO prompts (category, text, kind, options)
