@@ -8,7 +8,7 @@ const config: CapacitorConfig = {
   appName: "Hearth",
   webDir: "native-shell",
   server: {
-    url: process.env.HEARTH_PUBLIC_URL ?? "https://HEARTH-HOST-UNSET",
+    url: process.env.HEARTH_PUBLIC_URL ?? "https://hearth-gc8u.onrender.com",
     cleartext: false,
   },
   ios: {

@@ -24,9 +24,14 @@ Web push is wired end to end: a service worker (`public/sw.js`), subscription st
 
 ## Path to our phones (recommended)
 
-1. Host the Docker image anywhere with a persistent disk mounted at `/app/.data` (Render Starter + 1 GB disk, Fly.io volume, or a home server). `docker build -t hearth . && docker run -p 3000:3000 -v hearth-data:/app/.data --env-file .env.local hearth`
-2. Open the URL on both phones, join with the code, set PINs.
-3. Add to Home Screen. Enable the evening nudge. Done. No Apple review, no store, works today.
+Live at **https://hearth-gc8u.onrender.com** (Render, Docker, starter, Virginia, 1 GB disk at `/app/.data`, `TZ=America/New_York`). Reminders run via the `hearth-notify` Render cron every 15 minutes against `/api/notify`. Auto-deploys on every push to `main`.
+
+1. Open the URL on both phones.
+2. One of you: Get started, name, topics, PIN, share the six-letter code.
+3. The other: I have a code, enter it, name, PIN.
+4. Add to Home Screen on both phones. Enable the evening nudge when the card appears.
+
+Self-host alternative: `docker build -t hearth . && docker run -p 3000:3000 -v hearth-data:/app/.data --env-file .env.local hearth`
 
 ## Path to the App Store
 
