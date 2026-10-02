@@ -40,21 +40,44 @@ jobs:
           set -euo pipefail
           mkdir -p "$HOME/private_keys" "$HOME/.private_keys" "$HOME/.appstoreconnect/private_keys"
           python3 - <<'PY'
+          import base64
           import os
+          import re
+          import textwrap
           from pathlib import Path
+
           raw = os.environ["ASC_API_KEY_P8"].strip()
-          if (raw.startswith('"') and raw.endswith('"')) or (raw.startswith("'") and raw.endswith("'")):
+          if (raw.startswith('"') and raw.endswith('"')) or (
+              raw.startswith("'") and raw.endswith("'")
+          ):
               raw = raw[1:-1].strip()
-          raw = raw.replace("\r\n", "\n").replace("\r", "\n")
-          raw = raw.replace("\\n", "\n")
-          if "BEGIN" not in raw:
-              body = "".join(raw.split())
-              raw = "-----BEGIN PRIVATE KEY-----\n" + body + "\n-----END PRIVATE KEY-----"
-          if "BEGIN PRIVATE KEY" not in raw:
-              raise SystemExit("ASC_API_KEY_P8 is not a .p8 PEM. Re-paste the file including the BEGIN/END PRIVATE KEY lines.")
+          raw = raw.replace("\r\n", "\n").replace("\r", "\n").replace("\\n", "\n")
+          match = re.search(
+              r"-----BEGIN ([A-Z ]+)-----\s*(.*?)\s*-----END \1-----",
+              raw,
+              re.S,
+          )
+          if match:
+              kind, body = match.group(1), match.group(2)
+          else:
+              kind, body = "PRIVATE KEY", raw
+          body = re.sub(r"\s+", "", body)
+          try:
+              data = base64.b64decode(body, validate=True)
+          except Exception as exc:
+              raise SystemExit(
+                  "ASC_API_KEY_P8 is not valid base64. Open the AuthKey_*.p8 file in TextEdit and paste the whole file into the GitHub secret."
+              ) from exc
+          if len(data) < 80:
+              raise SystemExit(
+                  "ASC_API_KEY_P8 is too short to be the .p8 key. That secret must be the downloaded file, not the Key ID or Issuer ID."
+              )
+          wrapped = "\n".join(textwrap.wrap(body, 64))
+          text = f"-----BEGIN {kind}-----\n{wrapped}\n-----END {kind}-----\n"
           key_id = os.environ["ASC_KEY_ID"].strip()
+          if len(key_id) < 8 or len(key_id) > 16 or " " in key_id:
+              raise SystemExit("ASC_KEY_ID should be the short Key ID from the keys table, not the .p8 file.")
           name = f"AuthKey_{key_id}.p8"
-          text = raw if raw.endswith("\n") else raw + "\n"
           for folder in (
               Path.home() / "private_keys",
               Path.home() / ".private_keys",
@@ -63,7 +86,7 @@ jobs:
               dest = folder / name
               dest.write_text(text, encoding="ascii")
               dest.chmod(0o600)
-          print("wrote", name, "pem_ok")
+          print("wrote", name, "pem_bytes", len(data))
           PY
         env:
           ASC_API_KEY_P8: ${{ secrets.ASC_API_KEY_P8 }}
