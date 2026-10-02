@@ -1,0 +1,87 @@
+name: testflight
+
+# Builds the Hearth iOS shell and uploads to TestFlight.
+# Requires repository secrets from App Store Connect (one-time human bind):
+#   ASC_KEY_ID, ASC_ISSUER_ID, ASC_API_KEY_P8 (the .p8 private key contents)
+# And repository variable:
+#   HEARTH_PUBLIC_URL (the hosted app URL)
+# Untested until its first run; expect one iteration on signing flags.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: apps/hearth
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/hearth/package-lock.json
+
+      - run: npm ci
+
+      - name: Sync Capacitor shell at hosted app
+        run: npx cap sync ios
+        env:
+          HEARTH_PUBLIC_URL: ${{ vars.HEARTH_PUBLIC_URL }}
+
+      - name: Install App Store Connect API key
+        run: |
+          mkdir -p "$HOME/private_keys"
+          echo "$ASC_API_KEY_P8" > "$HOME/private_keys/AuthKey_${ASC_KEY_ID}.p8"
+        env:
+          ASC_API_KEY_P8: ${{ secrets.ASC_API_KEY_P8 }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+
+      - name: Archive
+        working-directory: apps/hearth/ios/App
+        run: |
+          xcodebuild -project App.xcodeproj -scheme App -configuration Release \
+            -destination "generic/platform=iOS" \
+            -archivePath App.xcarchive archive \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$HOME/private_keys/AuthKey_${ASC_KEY_ID}.p8" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+
+      - name: Export IPA
+        working-directory: apps/hearth/ios/App
+        run: |
+          cat > ExportOptions.plist <<'PLIST'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>signingStyle</key><string>automatic</string>
+          </dict>
+          </plist>
+          PLIST
+          xcodebuild -exportArchive -archivePath App.xcarchive \
+            -exportPath . -exportOptionsPlist ExportOptions.plist \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$HOME/private_keys/AuthKey_${ASC_KEY_ID}.p8" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+
+      - name: Upload to TestFlight
+        working-directory: apps/hearth/ios/App
+        run: |
+          xcrun altool --upload-app --type ios -f App.ipa \
+            --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID"
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
