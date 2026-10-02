@@ -19,8 +19,8 @@ import { PathScroller } from "./path-scroller";
 type NodeState = "done" | "grace" | "current" | "locked";
 type IconName = "star" | "headphones" | "video" | "book" | "chest" | "mic";
 
-const WAVE = [50, 30, 22, 30, 50, 70, 78, 70];
-const ROW = 128;
+const WAVE = [50, 28, 18, 28, 50, 72, 82, 72];
+const ROW = 102;
 const ICONS: IconName[] = [
   "star",
   "headphones",
@@ -144,7 +144,7 @@ export function QuestPath({
   let y = 108;
   for (const node of nodes) {
     positions.push({ x: WAVE[positions.length % WAVE.length], y });
-    y += ROW + (node.state === "current" ? 78 : 0);
+    y += ROW + (node.state === "current" ? 62 : 0);
   }
   const height = y + 48;
 
