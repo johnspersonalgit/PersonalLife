@@ -18,18 +18,22 @@ export function PushOptIn({ vapidKey }: { vapidKey: string | null }) {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (
-      !vapidKey ||
-      !("serviceWorker" in navigator) ||
-      !("PushManager" in window) ||
-      !("Notification" in window)
-    ) {
-      setState("unsupported");
-      return;
-    }
-    navigator.serviceWorker
-      .register("/sw.js")
-      .then(() => {
+    let cancelled = false;
+    const detect = async () => {
+      // Yield once so no setState runs synchronously inside the effect.
+      await Promise.resolve();
+      if (
+        !vapidKey ||
+        !("serviceWorker" in navigator) ||
+        !("PushManager" in window) ||
+        !("Notification" in window)
+      ) {
+        if (!cancelled) setState("unsupported");
+        return;
+      }
+      try {
+        await navigator.serviceWorker.register("/sw.js");
+        if (cancelled) return;
         setState(
           Notification.permission === "granted"
             ? "on"
@@ -37,8 +41,14 @@ export function PushOptIn({ vapidKey }: { vapidKey: string | null }) {
               ? "off"
               : "prompt",
         );
-      })
-      .catch(() => setState("unsupported"));
+      } catch {
+        if (!cancelled) setState("unsupported");
+      }
+    };
+    void detect();
+    return () => {
+      cancelled = true;
+    };
   }, [vapidKey]);
 
   if (state !== "prompt") return null;
