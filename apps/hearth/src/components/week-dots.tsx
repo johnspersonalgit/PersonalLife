@@ -18,7 +18,7 @@ export function WeekDots({ dots }: { dots: WeekDot[] }) {
 
 function Dot({ state }: { state: WeekDot["state"] }) {
   const base =
-    "flex h-8 w-8 items-center justify-center rounded-full border text-ink";
+    "flex h-9 w-9 items-center justify-center rounded-full border-[3px] border-ink text-ink";
   switch (state) {
     case "done":
       return (

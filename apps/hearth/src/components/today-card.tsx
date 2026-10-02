@@ -49,15 +49,15 @@ export function TodayCard({
         : "happy";
 
   return (
-    <div className="card mt-2 flex flex-col gap-4 p-5">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="chip">{today.category}</span>
-          <span className={`chip ${KIND_CHIP[today.kind]}`}>
-            {KIND_LABELS[today.kind]}
-          </span>
-        </div>
-        <Ember mood={emberMood} size={44} />
+    <div className="card relative mt-8 flex flex-col gap-4 p-5 pt-10">
+      <div className="absolute -top-10 right-4">
+        <Ember mood={emberMood} size={88} />
+      </div>
+      <div className="flex items-center gap-2 pr-20">
+        <span className="chip">{today.category}</span>
+        <span className={`chip ${KIND_CHIP[today.kind]}`}>
+          {KIND_LABELS[today.kind]}
+        </span>
       </div>
       <h1 id="today-heading" className="font-display text-2xl leading-snug text-ink">
         {today.prompt}

@@ -75,7 +75,7 @@ export default async function Home() {
       </header>
 
       <div className="flex items-center gap-2">
-        <span className="chip border-gold-soft bg-gold-soft/30 text-gold-deep">
+        <span className="chip border-ink bg-flame text-card">
           <StreakFlame size={14} lit={streak.current > 0} />
           <span className="font-mono text-xs">{streak.current}</span>
           day streak
@@ -93,7 +93,7 @@ export default async function Home() {
       <PushOptIn vapidKey={process.env.HEARTH_VAPID_PUBLIC ?? null} />
 
       <section aria-labelledby="today-heading">
-        <p className="text-sm text-ink-soft">
+        <p className="font-display text-lg text-ink">
           {greeting()}, {member.name}.
         </p>
         <TodayCard

@@ -42,7 +42,7 @@ async function step(name, fn) {
 
 await step("01 welcome", async () => {
   await page.goto(BASE, { waitUntil: "networkidle" });
-  await page.waitForSelector("text=Two people. One small ritual.");
+  await page.waitForSelector("text=Two people. One tiny daily quest.");
   await settle();
   await shot("hearth-01-welcome");
 });

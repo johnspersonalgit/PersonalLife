@@ -9,6 +9,7 @@ import {
   lookupRitual,
 } from "@/lib/actions";
 import { Avatar } from "./avatar";
+import { Ember } from "./ember";
 import { CheckIcon, CopyIcon } from "./icons";
 
 const CATEGORIES = [
@@ -67,17 +68,10 @@ export function OnboardingFlow() {
 
         {step === "welcome" && (
           <div className="flex flex-1 flex-col items-center justify-center text-center">
-            <span className="overflow-hidden rounded-full border border-line shadow-sm">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/ember-hero.jpg"
-                alt="Ember, the Hearth mascot"
-                className="h-32 w-32 object-cover"
-              />
-            </span>
-            <p className="mt-4 font-display text-5xl text-ink">Hearth</p>
-            <p className="mt-3 font-serif text-2xl text-gold-deep italic">
-              Two people. One small ritual.
+            <Ember mood="happy" size={188} />
+            <p className="mt-2 font-display text-5xl text-ink">Hearth</p>
+            <p className="mt-2 font-display text-xl text-rose">
+              Two people. One tiny daily quest.
             </p>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink-soft">
               One question a day, sealed until you both answer. A shared streak

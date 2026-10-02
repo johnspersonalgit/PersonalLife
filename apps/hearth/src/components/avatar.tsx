@@ -1,5 +1,5 @@
 export const AVATARS = [
-  { id: "ember", label: "Ember", src: "/avatars/ember.jpg" },
+  { id: "ember", label: "Ember", src: "/avatars/ember.png" },
   { id: "bear", label: "Bear", src: "/avatars/bear.jpg" },
   { id: "rabbit", label: "Rabbit", src: "/avatars/rabbit.jpg" },
   { id: "fox", label: "Fox", src: "/avatars/fox.jpg" },

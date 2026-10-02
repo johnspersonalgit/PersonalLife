@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { Ember } from "./ember";
 
 const EMBERS = [
   { left: "18%", delay: "0s", size: 6 },
@@ -51,17 +52,7 @@ export function CelebrationView({
         />
       ))}
 
-      <span
-        className="overflow-hidden rounded-full border border-line shadow-sm"
-        style={{ animation: "ember-hop 900ms ease-in-out infinite" }}
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/ember-hero.jpg"
-          alt="Ember celebrating"
-          className="h-36 w-36 object-cover"
-        />
-      </span>
+      <Ember mood="celebrate" size={196} />
 
       <p
         className="mt-6 font-display text-7xl leading-none text-ink"

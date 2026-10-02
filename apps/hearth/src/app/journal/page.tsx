@@ -26,7 +26,7 @@ export default async function JournalPage() {
 
       {days.length === 0 ? (
         <div className="card flex flex-col items-center gap-2 p-6 text-center">
-          <Ember mood="sleepy" size={64} />
+          <Ember mood="sleepy" size={112} />
           <p className="text-sm text-ink-soft">
             No entries yet. Answer today&rsquo;s question and the journal
             begins.

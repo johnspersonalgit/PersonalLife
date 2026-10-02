@@ -27,7 +27,7 @@ export default async function NotesPage() {
       <div className="flex flex-1 flex-col gap-3">
         {notes.length === 0 ? (
           <div className="card flex flex-col items-center gap-2 p-6 text-center">
-            <Ember mood="sleepy" size={64} />
+            <Ember mood="sleepy" size={112} />
             <p className="text-sm text-ink-soft">
               Nothing passed yet. The first note is the hardest.
             </p>
