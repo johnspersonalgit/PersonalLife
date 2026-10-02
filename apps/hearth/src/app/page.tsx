@@ -17,16 +17,8 @@ import { PushOptIn } from "@/components/push-opt-in";
 import { TabBar } from "@/components/tab-bar";
 import { QuestPath } from "@/components/quest-path";
 import { TodayCard } from "@/components/today-card";
-import { WeekDots } from "@/components/week-dots";
 
 export const dynamic = "force-dynamic";
-
-function greeting(): string {
-  const h = new Date().getHours();
-  if (h < 12) return "Good morning";
-  if (h < 17) return "Good afternoon";
-  return "Good evening";
-}
 
 export default async function Home() {
   const member = await getSessionMember();
@@ -42,26 +34,33 @@ export default async function Home() {
     .prepare("SELECT code FROM couples WHERE id = ?")
     .get(member.coupleId) as { code: string };
 
-  const myAnswer = today.answers.find((a) => a.memberId === member.id);
-
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-5 px-5 pt-6 pb-28">
-      <header className="flex items-center justify-between">
-        <span className="font-display text-2xl text-ink">Hearth</span>
-        <div className="flex items-center gap-3">
+    <main className="mx-auto flex w-full max-w-md flex-1 flex-col pb-28">
+      <header className="sticky top-0 z-30 flex items-center justify-between gap-2 border-b-[3px] border-ink bg-paper/95 px-4 py-2.5 backdrop-blur-sm">
+        <div className="flex items-center gap-2">
+          <span className="chip border-ink bg-flame text-card">
+            <StreakFlame size={14} lit={streak.current > 0} />
+            <span className="font-mono text-xs">{streak.current}</span>
+          </span>
+          <span className="chip">
+            <HeartIcon size={12} />
+            {streak.graceLeft ? 1 : 0}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
           <div className="flex items-center -space-x-2">
             <Avatar
               avatar={member.avatar}
               name={member.name}
               color={member.color}
-              size={36}
+              size={32}
             />
             {partner ? (
               <Avatar
                 avatar={partner.avatar}
                 name={partner.name}
                 color={partner.color}
-                size={36}
+                size={32}
               />
             ) : null}
           </div>
@@ -75,58 +74,34 @@ export default async function Home() {
         </div>
       </header>
 
-      <div className="flex items-center gap-2">
-        <span className="chip border-ink bg-flame text-card">
-          <StreakFlame size={14} lit={streak.current > 0} />
-          <span className="font-mono text-xs">{streak.current}</span>
-          day streak
-        </span>
-        <span className="chip">
-          <HeartIcon size={12} />
-          {streak.graceLeft ? "1 grace" : "grace used"}
-        </span>
-      </div>
-
       {nudges.map((n) => (
-        <NudgeCard key={n.id} nudgeId={n.id} fromName={n.fromName} />
+        <div key={n.id} className="px-4 pt-3">
+          <NudgeCard nudgeId={n.id} fromName={n.fromName} />
+        </div>
       ))}
 
-      <PushOptIn vapidKey={process.env.HEARTH_VAPID_PUBLIC ?? null} />
+      <QuestPath
+        today={today}
+        week={week}
+        member={member}
+        partner={partner}
+        coupleCode={couple.code}
+      />
 
-      <section aria-labelledby="today-heading">
-        <p className="font-display text-lg text-ink">
-          {greeting()}, {member.name}.
-        </p>
-        <QuestPath
-          today={today}
-          member={member}
-          partner={partner}
-          coupleCode={couple.code}
-        />
-        {today.complete ? (
-          <div className="mt-6">
-            <TodayCard
-              today={today}
-              member={member}
-              partner={partner}
-              coupleCode={couple.code}
-            />
-          </div>
-        ) : null}
-      </section>
-
-      <section className="card p-4" aria-label="This week">
-        <p className="mb-3 text-[10px] font-semibold tracking-widest uppercase text-ink-soft">
-          This week
-        </p>
-        <WeekDots dots={week} />
-      </section>
-
-      {partner && !myAnswer ? null : partner ? (
-        <Link href="/notes" className="btn btn-secondary w-full">
-          Pass a note
-        </Link>
+      {today.complete ? (
+        <div className="px-5">
+          <TodayCard
+            today={today}
+            member={member}
+            partner={partner}
+            coupleCode={couple.code}
+          />
+        </div>
       ) : null}
+
+      <div className="px-5 pt-4">
+        <PushOptIn vapidKey={process.env.HEARTH_VAPID_PUBLIC ?? null} />
+      </div>
 
       <TabBar active="/" />
     </main>

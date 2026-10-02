@@ -113,3 +113,62 @@ export function SealIcon(props: IconProps) {
     </>,
   );
 }
+
+export function StarIcon(props: IconProps) {
+  return (
+    <svg
+      width={props.size ?? 20}
+      height={props.size ?? 20}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+      {...props}
+    >
+      <path d="M12 2.7l2.55 5.55 6.1.86-4.45 4.22 1.1 6.05L12 16.7l-5.3 2.68 1.1-6.05-4.45-4.22 6.1-.86L12 2.7z" />
+    </svg>
+  );
+}
+
+export function HeadphonesIcon(props: IconProps) {
+  return base(
+    props,
+    <>
+      <path d="M4 13a8 8 0 0 1 16 0" />
+      <rect x="3" y="13" width="4" height="7" rx="2" />
+      <rect x="17" y="13" width="4" height="7" rx="2" />
+    </>,
+  );
+}
+
+export function VideoIcon(props: IconProps) {
+  return base(
+    props,
+    <>
+      <rect x="3" y="7" width="13" height="10" rx="2" />
+      <path d="m16 10 5-3v10l-5-3" />
+    </>,
+  );
+}
+
+export function MicIcon(props: IconProps) {
+  return base(
+    props,
+    <>
+      <rect x="9" y="3" width="6" height="11" rx="3" />
+      <path d="M5 11a7 7 0 0 0 14 0" />
+      <path d="M12 18v3" />
+    </>,
+  );
+}
+
+export function ChestIcon(props: IconProps) {
+  return base(
+    props,
+    <>
+      <rect x="3" y="8" width="18" height="12" rx="2" />
+      <path d="M3 12h18" />
+      <path d="M12 8v4" />
+      <path d="M3 8 6 4h12l3 4" />
+    </>,
+  );
+}

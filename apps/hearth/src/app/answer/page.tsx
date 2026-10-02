@@ -71,6 +71,7 @@ export default async function AnswerPage() {
         <QuestLesson
           kind={today.kind}
           prompt={today.prompt}
+          category={today.category}
           options={today.options}
           role={role}
           personName={partner?.name ?? "your person"}

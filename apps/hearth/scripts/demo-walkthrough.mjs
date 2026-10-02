@@ -74,7 +74,7 @@ await step("03 home as John", async () => {
 
 await step("04 answer form", async () => {
   await tap(page.getByRole("link", { name: "START" }));
-  await page.waitForSelector("text=One step");
+  await page.waitForSelector("text=Today's quest");
   await settle();
   await shot("hearth-04-answer-form");
 });
@@ -83,6 +83,8 @@ await step("05 celebration", async () => {
   await tap(page.getByRole("button", { name: "Continue" }));
   await tap(page.getByRole("button", { name: /Good/ }));
   await tap(page.getByRole("button", { name: "Continue" }));
+  await tap(page.locator("[data-lesson-choice]").first());
+  await tap(page.locator("[data-lesson-chip]").first());
   await page.locator("textarea").fill(
     "Long day but a good one. Your note this morning carried the 3pm meeting. Porch photos looked perfect.",
   );

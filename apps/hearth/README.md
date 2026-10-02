@@ -66,8 +66,8 @@ Adopted patterns (adapted, not pasted; no third-party code, assets, fonts, or tr
 | Streak-at-risk countdown | Paired daily question, above | Countdown chip on home |
 | Two huge tappable option cards with selected state | [Superpower onboarding question](https://mobbin.com/screens/320482c3-f6d1-40d7-adf9-192f03796853) | Rapid fire form |
 | Quiz framing: category chip, question, option scale, partner results | [Paired partner quiz](https://mobbin.com/screens/ffea3f7b-6855-4eef-8dac-bcedafbf1abf) | Guess day flow |
-| Winding lesson path, current node, giant START | [Duolingo home path](https://mobbin.com/screens/3ed7f990-7eea-4cfa-bc35-af1ee8ecee40) | Today quest path |
-| One prompt per screen, Continue, then seal | Duolingo lesson | `/answer` walk-through |
+| Winding circular lesson trail, mascot beside current node, START bubble on that node, unit banner, vitality strip | [Duolingo home](https://mobbin.com/screens/3ed7f990-7eea-4cfa-bc35-af1ee8ecee40), John's 2026-10-01 Duo recording | Today path |
+| Five easy lesson beats (intro, mood, closer, spark, one sentence) | Duolingo lesson length | `/answer` walk-through |
 
 ## Activity kinds
 

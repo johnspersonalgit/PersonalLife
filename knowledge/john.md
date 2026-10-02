@@ -29,3 +29,5 @@ Record preferences here as John states them, one dated line each. Never quote or
 - 2026-10-02: Hearth person colors are blue for him and rose/pink-purple for his wife. Avatars are clay creatures in Ember's style. Brand type is his files: Bricolage Grotesque, DM Sans, Instrument Serif.
 - 2026-10-02: Hearth must be cartoon and whimsical, not quiet-luxury gold/cream. Ember is the full-body clay flame John picked. Punchy orange, blue, and rose. Thick ink outlines. Duolingo energy.
 - 2026-10-02: Hearth is for John and Ariana. Tonight both phones use Safari Add to Home Screen at /install. Public App Store / TestFlight waits on an App Store Connect API key bound to PersonalLife GitHub secrets, not pasted in chat.
+- 2026-10-02: Hearth home should match real Duolingo: long winding circular nodes, Ember beside the current node, START attached to that node, unit banner, vitality strip. Hearth colors stay paper/ink/flame/blue/rose, not Duo green.
+- 2026-10-02: A Hearth lesson is more than one or two prompts. Several easy beats that feel like a real task and finish in a minute or two, every day.

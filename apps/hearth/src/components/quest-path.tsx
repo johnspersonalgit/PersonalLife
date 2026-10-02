@@ -1,11 +1,45 @@
 import Link from "next/link";
-import type { DayView } from "@/lib/repo";
+import type { DayView, WeekDot } from "@/lib/repo";
+import { shiftDay } from "@/lib/time";
 import type { Member } from "@/lib/session";
 import { Ember } from "./ember";
-import { CheckIcon, LockIcon } from "./icons";
+import {
+  BookIcon,
+  CheckIcon,
+  ChestIcon,
+  HeadphonesIcon,
+  LockIcon,
+  MicIcon,
+  StarIcon,
+  VideoIcon,
+} from "./icons";
 import { NudgeButton } from "./nudge-button";
+import { PathScroller } from "./path-scroller";
 
-type NodeState = "done" | "current" | "locked";
+type NodeState = "done" | "grace" | "current" | "locked";
+type IconName = "star" | "headphones" | "video" | "book" | "chest" | "mic";
+
+const WAVE = [50, 30, 22, 30, 50, 70, 78, 70];
+const ROW = 128;
+const ICONS: IconName[] = [
+  "star",
+  "headphones",
+  "video",
+  "book",
+  "star",
+  "chest",
+  "mic",
+  "star",
+];
+
+const CATEGORY_TITLE: Record<string, string> = {
+  us: "Show up for us",
+  heard: "Hear each other",
+  load: "Share the load",
+  gratitude: "Name the good",
+  dreams: "Keep a someday",
+  play: "Play a little",
+};
 
 function canAct(today: DayView, member: Member): boolean {
   const myAnswer = today.answers.some((a) => a.memberId === member.id);
@@ -21,13 +55,36 @@ function canAct(today: DayView, member: Member): boolean {
   return !myAnswer;
 }
 
+function iconFor(name: IconName, size: number) {
+  switch (name) {
+    case "star":
+      return <StarIcon size={size} />;
+    case "headphones":
+      return <HeadphonesIcon size={size} />;
+    case "video":
+      return <VideoIcon size={size} />;
+    case "book":
+      return <BookIcon size={size} />;
+    case "chest":
+      return <ChestIcon size={size} />;
+    case "mic":
+      return <MicIcon size={size} />;
+    default: {
+      const _never: never = name;
+      return _never;
+    }
+  }
+}
+
 export function QuestPath({
   today,
+  week,
   member,
   partner,
   coupleCode,
 }: {
   today: DayView;
+  week: WeekDot[];
   member: Member;
   partner: Member | null;
   coupleCode: string;
@@ -40,29 +97,7 @@ export function QuestPath({
   const waiting = Boolean(myAnswer) && !today.complete;
   const person = partner?.name ?? "your person";
 
-  const nodes: { id: string; label: string; hint: string; state: NodeState }[] =
-    [
-      {
-        id: "today",
-        label: "Today",
-        hint: "Your tiny quest",
-        state: today.complete || myAnswer ? "done" : "current",
-      },
-      {
-        id: "seal",
-        label: "Seal",
-        hint: partner ? "Wait together" : "Share the code",
-        state: today.complete ? "done" : waiting ? "current" : "locked",
-      },
-      {
-        id: "together",
-        label: "Together",
-        hint: "The reveal",
-        state: today.complete ? "done" : "locked",
-      },
-    ];
-
-  let caption = "Tap START. One small step at a time.";
+  let caption = CATEGORY_TITLE[today.category] ?? "Today's tiny quest";
   if (!myAnswer && partnerAnswer) {
     caption = `${person} sealed an answer. Yours unlocks it.`;
   } else if (!myAnswer && !partner) {
@@ -75,95 +110,208 @@ export function QuestPath({
     caption = "You both showed up. The path is open.";
   }
 
+  const past = week.filter(
+    (d) =>
+      d.day !== today.day && (d.state === "done" || d.state === "grace"),
+  );
+  const futureDays = Array.from({ length: 7 }, (_, i) =>
+    shiftDay(today.day, i + 1),
+  );
+
+  const nodes: {
+    id: string;
+    state: NodeState;
+    icon: IconName;
+  }[] = [
+    ...past.map((d, i) => ({
+      id: d.day,
+      state: (d.state === "grace" ? "grace" : "done") as NodeState,
+      icon: ICONS[i % ICONS.length],
+    })),
+    {
+      id: today.day,
+      state: today.complete ? "done" : ("current" as const),
+      icon: ICONS[past.length % ICONS.length],
+    },
+    ...futureDays.map((day, i) => ({
+      id: day,
+      state: "locked" as const,
+      icon: ICONS[(past.length + 1 + i) % ICONS.length],
+    })),
+  ];
+
+  const positions: { x: number; y: number }[] = [];
+  let y = 56;
+  for (const node of nodes) {
+    positions.push({ x: WAVE[positions.length % WAVE.length], y });
+    y += ROW + (node.state === "current" ? 78 : 0);
+  }
+  const height = y + 48;
+
   return (
-    <section className="flex flex-col" aria-label="Today's path">
-      <p id="today-heading" className="font-display text-lg leading-snug text-ink">
-        {caption}
-      </p>
-      <div className="relative mx-auto mt-3 w-full max-w-xs">
-        <div
-          className="absolute top-8 bottom-8 left-1/2 w-1.5 -translate-x-1/2 rounded-full bg-ink"
-          aria-hidden="true"
-        />
-        <ol className="relative flex flex-col gap-5">
-          {nodes.map((node, i) => (
-            <li
-              key={node.id}
-              className={`flex items-center ${
-                i % 2 === 0 ? "justify-end pr-1" : "justify-start pl-1"
-              }`}
-            >
-              <PathNode
-                label={node.label}
-                hint={node.hint}
-                state={node.state}
-                current={node.state === "current"}
-              />
-            </li>
-          ))}
-        </ol>
+    <section aria-label="Today's path">
+      <div className="sticky top-[52px] z-20 bg-paper px-4 pt-3 pb-1">
+        <div className="unit-banner">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-[11px] font-extrabold tracking-[0.16em] text-card/80 uppercase">
+                Section 1, Unit 1
+              </p>
+              <h1
+                id="today-heading"
+                className="mt-1 font-display text-xl leading-snug text-card"
+              >
+                {caption}
+              </h1>
+            </div>
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-card/15 text-card">
+              <BookIcon size={20} />
+            </span>
+          </div>
+        </div>
       </div>
 
-      {open ? (
-        <Link href="/answer" className="btn btn-primary mt-5 w-full">
-          START
-        </Link>
-      ) : waiting && partner ? (
-        <div className="mt-5">
-          <NudgeButton partnerName={partner.name} />
+      <PathScroller>
+        <div className="relative mx-auto w-full max-w-md" style={{ height }}>
+          <svg
+            className="pointer-events-none absolute inset-0 h-full w-full"
+            viewBox={`0 0 100 ${height}`}
+            preserveAspectRatio="none"
+            aria-hidden="true"
+          >
+            <polyline
+              points={positions.map((p) => `${p.x},${p.y}`).join(" ")}
+              fill="none"
+              stroke="#1f2a55"
+              strokeWidth="3.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              opacity="0.22"
+            />
+          </svg>
+
+          {nodes.map((node, i) => {
+            const pos = positions[i];
+            const current = node.state === "current";
+            const emberRight = pos.x <= 50;
+            return (
+              <div
+                key={node.id}
+                className="absolute"
+                style={{ left: `${pos.x}%`, top: pos.y }}
+              >
+                <div
+                  className={`relative -translate-x-1/2 -translate-y-1/2 ${
+                    current ? "scroll-mt-[148px]" : ""
+                  }`}
+                  data-current-node={current ? "true" : undefined}
+                >
+                  {current ? (
+                    <div
+                      className={`absolute top-1/2 z-10 -translate-y-[70%] ${
+                        emberRight ? "left-[78px]" : "right-[78px]"
+                      }`}
+                    >
+                      <Ember
+                        mood={partnerAnswer && open ? "worried" : "happy"}
+                        size={92}
+                      />
+                    </div>
+                  ) : null}
+
+                  <PathNode
+                    state={node.state}
+                    icon={node.icon}
+                    current={current}
+                  />
+
+                  {current && open ? (
+                    <Link
+                      href="/answer"
+                      className="start-bubble"
+                      aria-label="START"
+                    >
+                      START
+                    </Link>
+                  ) : null}
+
+                  {current && waiting && partner ? (
+                    <div className="absolute top-[86px] left-1/2 z-10 w-52 -translate-x-1/2">
+                      <NudgeButton partnerName={partner.name} />
+                    </div>
+                  ) : null}
+
+                  {current && waiting && !partner ? (
+                    <p className="absolute top-[86px] left-1/2 z-10 -translate-x-1/2 rounded-full border-[3px] border-ink bg-card px-4 py-2 font-mono text-sm tracking-[0.2em] text-ink shadow-[0_4px_0_#1f2a55]">
+                      {coupleCode}
+                    </p>
+                  ) : null}
+                </div>
+              </div>
+            );
+          })}
         </div>
-      ) : waiting && !partner ? (
-        <p className="card mt-5 px-4 py-3 text-center font-mono text-lg tracking-[0.25em] text-ink">
-          {coupleCode}
-        </p>
-      ) : null}
+      </PathScroller>
     </section>
   );
 }
 
 function PathNode({
-  label,
-  hint,
   state,
+  icon,
   current,
 }: {
-  label: string;
-  hint: string;
   state: NodeState;
+  icon: IconName;
   current: boolean;
 }) {
-  const fill =
-    state === "done"
-      ? "bg-sage text-card"
-      : state === "current"
-        ? "bg-flame text-card path-node-current"
-        : "bg-cream text-ink-soft";
+  const size = current ? 78 : 64;
+  const glyph = state === "done" || state === "grace" ? 26 : 28;
+  let fill = "bg-card text-ink-soft";
+  switch (state) {
+    case "done":
+      fill = "bg-sage text-card";
+      break;
+    case "grace":
+      fill = "bg-honey text-ink";
+      break;
+    case "current":
+      fill = "bg-flame text-card path-node-current";
+      break;
+    case "locked":
+      fill = "bg-cream text-ink-soft";
+      break;
+    default: {
+      const _never: never = state;
+      return _never;
+    }
+  }
 
   return (
-    <div className="relative flex w-32 flex-col items-center">
-      {current ? (
-        <div className="absolute -top-9">
-          <Ember mood="happy" size={56} />
-        </div>
-      ) : null}
+    <div
+      className={`relative flex items-center justify-center ${
+        current ? "path-node-ring" : ""
+      }`}
+      style={{ width: size, height: size }}
+      aria-current={current ? "step" : undefined}
+    >
       <div
-        className={`flex h-16 w-16 items-center justify-center rounded-full border-[3px] border-ink shadow-[0_5px_0_#1f2a55] ${fill} ${
-          current ? "mt-5" : ""
-        }`}
-        aria-current={current ? "step" : undefined}
+        className={`flex h-full w-full items-center justify-center rounded-full border-[4px] border-ink shadow-[0_7px_0_#1f2a55] ${fill}`}
       >
         {state === "done" ? (
-          <CheckIcon size={24} />
+          <CheckIcon size={glyph} />
         ) : state === "locked" ? (
-          <LockIcon size={22} />
+          icon === "chest" ? (
+            <ChestIcon size={glyph - 2} />
+          ) : (
+            <LockIcon size={glyph - 4} />
+          )
+        ) : state === "grace" ? (
+          <StarIcon size={glyph} />
         ) : (
-          <span className="font-display text-lg">1</span>
+          iconFor(icon, glyph)
         )}
       </div>
-      <p className="mt-1.5 font-display text-sm text-ink">{label}</p>
-      <p className="text-[10px] font-semibold tracking-wide text-ink-soft">
-        {hint}
-      </p>
     </div>
   );
 }
