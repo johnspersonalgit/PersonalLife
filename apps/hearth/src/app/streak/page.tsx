@@ -89,6 +89,10 @@ export default async function StreakPage() {
         <WeekDots dots={week} />
       </section>
 
+      <Link href="/" className="btn btn-primary w-full">
+        Back to the path
+      </Link>
+
       <section aria-labelledby="milestones-heading">
         <h2
           id="milestones-heading"
@@ -129,10 +133,6 @@ export default async function StreakPage() {
           })}
         </div>
       </section>
-
-      <Link href="/" className="btn btn-primary w-full">
-        Back to the path
-      </Link>
 
       <TabBar active="/streak" />
     </main>
