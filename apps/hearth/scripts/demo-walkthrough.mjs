@@ -81,10 +81,22 @@ await step("04 answer form", async () => {
 
 await step("05 celebration", async () => {
   await tap(page.getByRole("button", { name: "Continue" }));
+  await page.waitForSelector("text=How are you arriving");
+  await settle();
+  await shot("hearth-04b-mood");
   await tap(page.getByRole("button", { name: /Good/ }));
   await tap(page.getByRole("button", { name: "Continue" }));
+  await page.waitForSelector("text=Which is closer");
+  await settle();
+  await shot("hearth-04c-closer");
   await tap(page.locator("[data-lesson-choice]").first());
+  await page.waitForSelector("text=One word for today");
+  await settle();
+  await shot("hearth-04d-spark");
   await tap(page.locator("[data-lesson-chip]").first());
+  await page.waitForSelector("text=One short sentence");
+  await settle();
+  await shot("hearth-04e-write");
   await page.locator("textarea").fill(
     "Long day but a good one. Your note this morning carried the 3pm meeting. Porch photos looked perfect.",
   );

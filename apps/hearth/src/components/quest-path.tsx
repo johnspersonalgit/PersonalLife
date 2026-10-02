@@ -141,7 +141,7 @@ export function QuestPath({
   ];
 
   const positions: { x: number; y: number }[] = [];
-  let y = 56;
+  let y = 108;
   for (const node of nodes) {
     positions.push({ x: WAVE[positions.length % WAVE.length], y });
     y += ROW + (node.state === "current" ? 78 : 0);
@@ -201,20 +201,19 @@ export function QuestPath({
                 style={{ left: `${pos.x}%`, top: pos.y }}
               >
                 <div
-                  className={`relative -translate-x-1/2 -translate-y-1/2 ${
-                    current ? "scroll-mt-[148px]" : ""
-                  }`}
+                  className="relative -translate-x-1/2 -translate-y-1/2"
                   data-current-node={current ? "true" : undefined}
+                  data-today-node={node.id === today.day ? "true" : undefined}
                 >
                   {current ? (
                     <div
-                      className={`absolute top-1/2 z-10 -translate-y-[70%] ${
-                        emberRight ? "left-[78px]" : "right-[78px]"
+                      className={`absolute top-[-8px] z-10 ${
+                        emberRight ? "left-[86px]" : "right-[86px]"
                       }`}
                     >
                       <Ember
                         mood={partnerAnswer && open ? "worried" : "happy"}
-                        size={92}
+                        size={88}
                       />
                     </div>
                   ) : null}
