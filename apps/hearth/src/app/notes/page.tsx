@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getNotes } from "@/lib/repo";
 import { getPartner, getSessionMember } from "@/lib/session";
 import { prettyTime } from "@/lib/time";
+import { Ember } from "@/components/ember";
 import { NoteComposer } from "@/components/note-composer";
 import { TabBar } from "@/components/tab-bar";
 
@@ -24,8 +25,11 @@ export default async function NotesPage() {
 
       <div className="flex flex-1 flex-col gap-3">
         {notes.length === 0 ? (
-          <div className="card p-5 text-sm text-ink-soft">
-            Nothing passed yet. The first note is the hardest.
+          <div className="card flex flex-col items-center gap-2 p-6 text-center">
+            <Ember mood="sleepy" size={64} />
+            <p className="text-sm text-ink-soft">
+              Nothing passed yet. The first note is the hardest.
+            </p>
           </div>
         ) : (
           notes.map((n) => {

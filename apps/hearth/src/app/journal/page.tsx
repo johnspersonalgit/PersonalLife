@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getRecentDays } from "@/lib/repo";
 import { getPartner, getSessionMember } from "@/lib/session";
 import { prettyDay } from "@/lib/time";
+import { Ember } from "@/components/ember";
 import { MoodFace } from "@/components/mood-row";
 import { TabBar } from "@/components/tab-bar";
 
@@ -23,8 +24,12 @@ export default async function JournalPage() {
       </header>
 
       {days.length === 0 ? (
-        <div className="card p-5 text-sm text-ink-soft">
-          No entries yet. Answer today&rsquo;s question and the journal begins.
+        <div className="card flex flex-col items-center gap-2 p-6 text-center">
+          <Ember mood="sleepy" size={64} />
+          <p className="text-sm text-ink-soft">
+            No entries yet. Answer today&rsquo;s question and the journal
+            begins.
+          </p>
         </div>
       ) : (
         days.map((d) => {
@@ -45,14 +50,40 @@ export default async function JournalPage() {
               </p>
               {d.complete ? (
                 <div className="flex flex-col gap-2">
-                  {theirs ? (
+                  {d.kind === "rapid" && mine && theirs ? (
+                    <span
+                      className={`chip self-start ${
+                        mine.text === theirs.text
+                          ? "border-gold bg-gold text-card"
+                          : "border-flame-soft bg-flame-soft/40 text-flame-deep"
+                      }`}
+                    >
+                      {mine.text === theirs.text
+                        ? "You matched"
+                        : "Opposite ends"}
+                    </span>
+                  ) : null}
+                  {d.kind === "mission" ? (
+                    <span className="chip self-start border-gold bg-gold text-card">
+                      Mission complete
+                    </span>
+                  ) : null}
+                  {theirs && theirs.text ? (
                     <Entry name={theirs.memberName} mood={theirs.mood} text={theirs.text} />
                   ) : null}
-                  {mine ? (
+                  {mine && mine.text ? (
                     <Entry name={mine.memberName} mood={mine.mood} text={mine.text} mine />
                   ) : null}
+                  {d.guesses.map((g) => (
+                    <Entry
+                      key={g.memberId}
+                      name={`${g.memberName} guessed`}
+                      mood={0}
+                      text={g.text}
+                    />
+                  ))}
                 </div>
-              ) : d.answers.length ? (
+              ) : d.answers.length || d.guesses.length ? (
                 <p className="text-sm text-ink-soft">
                   One of you answered. The day stayed half open.
                 </p>
@@ -90,7 +121,9 @@ function Entry({
         <span className="text-[10px] font-semibold tracking-widest uppercase text-ink-soft">
           {name}
         </span>
-        <MoodFace value={mood} size={16} className="text-gold-deep" />
+        {mood > 0 ? (
+          <MoodFace value={mood} size={16} className="text-gold-deep" />
+        ) : null}
       </div>
       <p className="mt-1.5 text-sm leading-relaxed text-ink">{text}</p>
     </div>

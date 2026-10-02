@@ -1,5 +1,5 @@
 import db from "./db";
-import { walkStreak } from "./streak";
+import { isDayComplete, walkStreak, type PromptKind } from "./streak";
 import { shiftDay } from "./time";
 import { localDay } from "./today";
 
@@ -11,12 +11,23 @@ export type AnswerView = {
   createdAt: string;
 };
 
+export type GuessView = {
+  memberId: number;
+  memberName: string;
+  text: string;
+  createdAt: string;
+};
+
 export type DayView = {
   id: number;
   day: string;
   category: string;
   prompt: string;
+  kind: PromptKind;
+  options: string[];
+  answererId: number | null;
   answers: AnswerView[];
+  guesses: GuessView[];
   complete: boolean;
 };
 
@@ -44,6 +55,9 @@ type DayRow = {
   day: string;
   category: string;
   prompt: string;
+  kind: PromptKind;
+  options: string | null;
+  answerer_id: number | null;
 };
 
 type AnswerRow = {
@@ -74,19 +88,19 @@ function coupleCategories(coupleId: number): string[] {
   }
 }
 
-function pickPromptId(coupleId: number, day: string): number {
+function pickPromptId(coupleId: number, day: string): { id: number; kind: PromptKind } {
   const cats = coupleCategories(coupleId);
   const all = (
     cats.length
       ? (db
           .prepare(
-            `SELECT id FROM prompts WHERE category IN (${cats.map(() => "?").join(",")}) ORDER BY id`,
+            `SELECT id, kind FROM prompts WHERE category IN (${cats.map(() => "?").join(",")}) ORDER BY id`,
           )
-          .all(...cats) as { id: number }[])
-      : (db.prepare("SELECT id FROM prompts ORDER BY id").all() as {
-          id: number;
-        }[])
-  ).map((r) => r.id);
+          .all(...cats) as { id: number; kind: PromptKind }[])
+      : (db
+          .prepare("SELECT id, kind FROM prompts ORDER BY id")
+          .all() as { id: number; kind: PromptKind }[])
+  );
 
   const recent = new Set(
     (
@@ -97,7 +111,7 @@ function pickPromptId(coupleId: number, day: string): number {
         .all(coupleId) as { prompt_id: number }[]
     ).map((r) => r.prompt_id),
   );
-  const pool = all.filter((id) => !recent.has(id));
+  const pool = all.filter((p) => !recent.has(p.id));
   const source = pool.length ? pool : all;
   return source[hashString(`${coupleId}:${day}`) % source.length];
 }
@@ -118,13 +132,44 @@ function toDayView(row: DayRow, memberCount: number): DayView {
     text: a.text,
     createdAt: a.created_at,
   }));
+  const guesses = (
+    db
+      .prepare(
+        `SELECT g.member_id, m.name AS member_name, g.text, g.created_at
+         FROM guesses g JOIN members m ON m.id = g.member_id
+         WHERE g.day_id = ? ORDER BY g.created_at`,
+      )
+      .all(row.id) as {
+      member_id: number;
+      member_name: string;
+      text: string;
+      created_at: string;
+    }[]
+  ).map((g) => ({
+    memberId: g.member_id,
+    memberName: g.member_name,
+    text: g.text,
+    createdAt: g.created_at,
+  }));
+  let options: string[] = [];
+  if (row.options) {
+    try {
+      options = JSON.parse(row.options) as string[];
+    } catch {
+      options = [];
+    }
+  }
   return {
     id: row.id,
     day: row.day,
     category: row.category,
     prompt: row.prompt,
+    kind: row.kind,
+    options,
+    answererId: row.answerer_id,
     answers,
-    complete: answers.length >= memberCount,
+    guesses,
+    complete: isDayComplete(row.kind, answers.length, guesses.length, memberCount),
   };
 }
 
@@ -136,12 +181,33 @@ export function memberCount(coupleId: number): number {
 }
 
 export function ensureDay(coupleId: number, day: string): DayView {
-  db.prepare(
-    "INSERT OR IGNORE INTO days (couple_id, day, prompt_id) VALUES (?, ?, ?)",
-  ).run(coupleId, day, pickPromptId(coupleId, day));
+  const existing = db
+    .prepare("SELECT 1 FROM days WHERE couple_id = ? AND day = ?")
+    .get(coupleId, day);
+  if (!existing) {
+    const picked = pickPromptId(coupleId, day);
+    let answererId: number | null = null;
+    if (picked.kind === "guess") {
+      const members = db
+        .prepare("SELECT id FROM members WHERE couple_id = ? ORDER BY id")
+        .all(coupleId) as { id: number }[];
+      const pastGuessDays = db
+        .prepare(
+          `SELECT COUNT(*) AS n FROM days d JOIN prompts p ON p.id = d.prompt_id
+           WHERE d.couple_id = ? AND p.kind = 'guess'`,
+        )
+        .get(coupleId) as { n: number };
+      if (members.length) {
+        answererId = members[pastGuessDays.n % members.length].id;
+      }
+    }
+    db.prepare(
+      "INSERT INTO days (couple_id, day, prompt_id, answerer_id) VALUES (?, ?, ?, ?)",
+    ).run(coupleId, day, picked.id, answererId);
+  }
   const row = db
     .prepare(
-      `SELECT d.id, d.day, p.category, p.text AS prompt
+      `SELECT d.id, d.day, p.category, p.text AS prompt, p.kind, p.options, d.answerer_id
        FROM days d JOIN prompts p ON p.id = d.prompt_id
        WHERE d.couple_id = ? AND d.day = ?`,
     )
@@ -152,7 +218,7 @@ export function ensureDay(coupleId: number, day: string): DayView {
 export function getDay(coupleId: number, day: string): DayView | null {
   const row = db
     .prepare(
-      `SELECT d.id, d.day, p.category, p.text AS prompt
+      `SELECT d.id, d.day, p.category, p.text AS prompt, p.kind, p.options, d.answerer_id
        FROM days d JOIN prompts p ON p.id = d.prompt_id
        WHERE d.couple_id = ? AND d.day = ?`,
     )
@@ -163,7 +229,7 @@ export function getDay(coupleId: number, day: string): DayView | null {
 export function getRecentDays(coupleId: number, limit = 60): DayView[] {
   const rows = db
     .prepare(
-      `SELECT d.id, d.day, p.category, p.text AS prompt
+      `SELECT d.id, d.day, p.category, p.text AS prompt, p.kind, p.options, d.answerer_id
        FROM days d JOIN prompts p ON p.id = d.prompt_id
        WHERE d.couple_id = ? ORDER BY d.day DESC LIMIT ?`,
     )
@@ -176,12 +242,19 @@ export function getStreak(coupleId: number, today: string = localDay()): StreakV
   const n = memberCount(coupleId);
   const rows = db
     .prepare(
-      `SELECT d.day, COUNT(a.id) AS answered
-       FROM days d LEFT JOIN answers a ON a.day_id = d.id
-       WHERE d.couple_id = ? GROUP BY d.id ORDER BY d.day DESC`,
+      `SELECT d.day, p.kind AS kind,
+         (SELECT COUNT(*) FROM answers a WHERE a.day_id = d.id) AS answered,
+         (SELECT COUNT(*) FROM guesses g WHERE g.day_id = d.id) AS guessed
+       FROM days d JOIN prompts p ON p.id = d.prompt_id
+       WHERE d.couple_id = ? ORDER BY d.day DESC`,
     )
-    .all(coupleId) as { day: string; answered: number }[];
-  const byDay = new Map(rows.map((r) => [r.day, r.answered >= n]));
+    .all(coupleId) as { day: string; kind: PromptKind; answered: number; guessed: number }[];
+  const byDay = new Map(
+    rows.map((r) => [
+      r.day,
+      isDayComplete(r.kind, r.answered, r.guessed, n),
+    ]),
+  );
 
   const first = db
     .prepare("SELECT MIN(day) AS first FROM days WHERE couple_id = ?")

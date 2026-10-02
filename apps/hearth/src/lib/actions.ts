@@ -153,22 +153,8 @@ export async function updatePin(
   return { ok: true };
 }
 
-export async function submitAnswer(formData: FormData) {
-  const member = await requireMember();
-  const mood = Number(formData.get("mood"));
-  const text = String(formData.get("text") ?? "").trim();
-  if (!Number.isInteger(mood) || mood < 1 || mood > 5) {
-    throw new Error("Pick a mood first");
-  }
-  if (!text) throw new Error("Write a few words first");
-
+async function finishDay(member: Member): Promise<never> {
   const today = localDay();
-  const day = ensureDay(member.coupleId, today);
-  db.prepare(
-    `INSERT INTO answers (day_id, member_id, mood, text) VALUES (?, ?, ?, ?)
-     ON CONFLICT(day_id, member_id) DO UPDATE SET mood = excluded.mood, text = excluded.text`,
-  ).run(day.id, member.id, mood, text.slice(0, 2000));
-
   const streak = getStreak(member.coupleId, today);
   recordBest(member.coupleId, streak.current);
 
@@ -186,6 +172,87 @@ export async function submitAnswer(formData: FormData) {
   redirect(
     `/celebration?s=${streak.current}${milestone ? `&m=${milestone}` : ""}`,
   );
+}
+
+export async function submitAnswer(formData: FormData) {
+  const member = await requireMember();
+  const mood = Number(formData.get("mood"));
+  const text = String(formData.get("text") ?? "").trim();
+  if (!Number.isInteger(mood) || mood < 1 || mood > 5) {
+    throw new Error("Pick a mood first");
+  }
+  if (!text) throw new Error("Write a few words first");
+
+  const today = localDay();
+  const day = ensureDay(member.coupleId, today);
+  db.prepare(
+    `INSERT INTO answers (day_id, member_id, mood, text) VALUES (?, ?, ?, ?)
+     ON CONFLICT(day_id, member_id) DO UPDATE SET mood = excluded.mood, text = excluded.text`,
+  ).run(day.id, member.id, mood, text.slice(0, 2000));
+
+  await finishDay(member);
+}
+
+export async function submitRapid(choice: string) {
+  const member = await requireMember();
+  const today = localDay();
+  const day = ensureDay(member.coupleId, today);
+  if (day.kind !== "rapid" || !day.options.includes(choice)) {
+    throw new Error("That is not one of today's options");
+  }
+  db.prepare(
+    `INSERT INTO answers (day_id, member_id, mood, text) VALUES (?, ?, 0, ?)
+     ON CONFLICT(day_id, member_id) DO UPDATE SET text = excluded.text`,
+  ).run(day.id, member.id, choice);
+
+  await finishDay(member);
+}
+
+export async function submitMission(note: string) {
+  const member = await requireMember();
+  const today = localDay();
+  const day = ensureDay(member.coupleId, today);
+  if (day.kind !== "mission") throw new Error("Today is not a mission");
+  db.prepare(
+    `INSERT INTO answers (day_id, member_id, mood, text) VALUES (?, ?, 0, ?)
+     ON CONFLICT(day_id, member_id) DO UPDATE SET text = excluded.text`,
+  ).run(day.id, member.id, note.trim().slice(0, 2000));
+
+  await finishDay(member);
+}
+
+export async function submitGuessAnswer(text: string) {
+  const member = await requireMember();
+  const trimmed = text.trim();
+  if (!trimmed) throw new Error("Write your answer first");
+  const today = localDay();
+  const day = ensureDay(member.coupleId, today);
+  if (day.kind !== "guess") throw new Error("Today is not a guess day");
+  if (day.answererId !== member.id) throw new Error("Today is your person's answer");
+  db.prepare(
+    `INSERT INTO answers (day_id, member_id, mood, text) VALUES (?, ?, 0, ?)
+     ON CONFLICT(day_id, member_id) DO UPDATE SET text = excluded.text`,
+  ).run(day.id, member.id, trimmed.slice(0, 2000));
+
+  await finishDay(member);
+}
+
+export async function submitGuess(text: string) {
+  const member = await requireMember();
+  const trimmed = text.trim();
+  if (!trimmed) throw new Error("Write your guess first");
+  const today = localDay();
+  const day = ensureDay(member.coupleId, today);
+  if (day.kind !== "guess") throw new Error("Today is not a guess day");
+  if (day.answererId === member.id) throw new Error("You are the answerer today");
+  const answered = day.answers.some((a) => a.memberId === day.answererId);
+  if (!answered) throw new Error("Your person has not answered yet");
+  db.prepare(
+    `INSERT INTO guesses (day_id, member_id, text) VALUES (?, ?, ?)
+     ON CONFLICT(day_id, member_id) DO UPDATE SET text = excluded.text`,
+  ).run(day.id, member.id, trimmed.slice(0, 2000));
+
+  await finishDay(member);
 }
 
 export async function sendNote(formData: FormData) {

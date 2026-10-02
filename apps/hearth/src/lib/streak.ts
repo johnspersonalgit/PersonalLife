@@ -1,5 +1,19 @@
 export const GRACE_WINDOW_DAYS = 7;
 
+export type PromptKind = "question" | "rapid" | "mission" | "guess";
+
+// A day completes when both partners did their part. Guess days need one
+// answer (from the designated answerer) and one guess (from the other).
+export function isDayComplete(
+  kind: PromptKind,
+  answered: number,
+  guessed: number,
+  memberCount: number,
+): boolean {
+  if (kind === "guess") return answered >= 1 && guessed >= 1;
+  return answered >= memberCount;
+}
+
 export type StreakWalk = {
   current: number;
   graceDays: string[];

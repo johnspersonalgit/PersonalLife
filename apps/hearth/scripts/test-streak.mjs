@@ -1,4 +1,4 @@
-import { walkStreak } from "../src/lib/streak.ts";
+import { walkStreak, isDayComplete } from "../src/lib/streak.ts";
 
 let failures = 0;
 
@@ -100,5 +100,14 @@ check(
   ),
   { current: 2, graceDays: ["2026-09-29"], todayComplete: false },
 );
+
+// 7. Kind-aware completion.
+check("question needs both", isDayComplete("question", 1, 0, 2), false);
+check("question complete at both", isDayComplete("question", 2, 0, 2), true);
+check("rapid needs both", isDayComplete("rapid", 1, 0, 2), false);
+check("mission needs both", isDayComplete("mission", 2, 0, 2), true);
+check("guess needs answer plus guess", isDayComplete("guess", 1, 0, 2), false);
+check("guess complete", isDayComplete("guess", 1, 1, 2), true);
+check("guess: two answers without guess is not complete", isDayComplete("guess", 2, 0, 2), false);
 
 process.exit(failures ? 1 : 0);

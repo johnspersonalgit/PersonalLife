@@ -6,7 +6,7 @@ import {
   MILESTONE_NAMES,
 } from "@/lib/repo";
 import { getSessionMember } from "@/lib/session";
-import { HeroFlame } from "@/components/flame";
+import { Ember } from "@/components/ember";
 import { CheckIcon, LockIcon } from "@/components/icons";
 import { TabBar } from "@/components/tab-bar";
 import { WeekDots } from "@/components/week-dots";
@@ -59,7 +59,7 @@ export default async function StreakPage() {
             />
           </svg>
           <div className="absolute">
-            <HeroFlame size={110} />
+            <Ember mood={streak.current > 0 ? "happy" : "sleepy"} size={104} />
           </div>
         </div>
 

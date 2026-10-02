@@ -67,6 +67,21 @@ Adopted patterns (adapted, not pasted; no third-party code, assets, fonts, or tr
 | "Answer to see your partner's response" sealed mechanic | [Paired daily question](https://mobbin.com/screens/a6d44089-3a2e-4909-9d96-7179ef99938e) | Home today card |
 | Mood row (five faces) | Paired daily question, above | Answer form |
 | Streak-at-risk countdown | Paired daily question, above | Countdown chip on home |
+| Two huge tappable option cards with selected state | [Superpower onboarding question](https://mobbin.com/screens/320482c3-f6d1-40d7-adf9-192f03796853) | Rapid fire form |
+| Quiz framing: category chip, question, option scale, partner results | [Paired partner quiz](https://mobbin.com/screens/ffea3f7b-6855-4eef-8dac-bcedafbf1abf) | Guess day flow |
+
+## Activity kinds
+
+The daily ritual rotates four kinds, all sealed until both partners do their part:
+
+- **Question**: mood plus a few honest sentences, revealed together.
+- **Rapid fire**: would-you-rather. Two big cards, both pick, match or opposite ends revealed.
+- **Mission**: a two-minute shared action. Both mark done, optional one-line proof.
+- **Guess day**: one partner answers about themselves (rotating), the other guesses the answer, then both reveal.
+
+## Ember
+
+The mascot is the streak flame, alive. Original SVG (`src/components/ember.tsx`), brand palette only, four moods (happy, sleepy, worried, celebrate) tied to ritual state, animations disabled under reduced motion. Deliberately not an owl.
 
 Palette and type are original to this repo: warm paper `#fbf8f3`, ink `#22201c`, gold `#c69a6a`, flame `#d9763a`; Fraunces display, Work Sans UI. Duolingo's cartoon green and mascot were deliberately not carried over.
 

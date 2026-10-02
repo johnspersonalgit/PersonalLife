@@ -17,7 +17,9 @@ CREATE TABLE IF NOT EXISTS members (
 CREATE TABLE IF NOT EXISTS prompts (
   id INTEGER PRIMARY KEY,
   category TEXT NOT NULL,
-  text TEXT NOT NULL
+  text TEXT NOT NULL,
+  kind TEXT NOT NULL DEFAULT 'question',
+  options TEXT
 );
 
 CREATE TABLE IF NOT EXISTS days (
@@ -25,6 +27,7 @@ CREATE TABLE IF NOT EXISTS days (
   couple_id INTEGER NOT NULL REFERENCES couples(id),
   day TEXT NOT NULL,
   prompt_id INTEGER NOT NULL REFERENCES prompts(id),
+  answerer_id INTEGER REFERENCES members(id),
   UNIQUE(couple_id, day)
 );
 
@@ -33,6 +36,15 @@ CREATE TABLE IF NOT EXISTS answers (
   day_id INTEGER NOT NULL REFERENCES days(id),
   member_id INTEGER NOT NULL REFERENCES members(id),
   mood INTEGER NOT NULL,
+  text TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  UNIQUE(day_id, member_id)
+);
+
+CREATE TABLE IF NOT EXISTS guesses (
+  id INTEGER PRIMARY KEY,
+  day_id INTEGER NOT NULL REFERENCES days(id),
+  member_id INTEGER NOT NULL REFERENCES members(id),
   text TEXT NOT NULL,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   UNIQUE(day_id, member_id)

@@ -8,6 +8,7 @@ import {
   joinRitual,
   lookupRitual,
 } from "@/lib/actions";
+import { Ember } from "./ember";
 import { CheckIcon, CopyIcon } from "./icons";
 
 const CATEGORIES = [
@@ -64,7 +65,8 @@ export function OnboardingFlow() {
 
         {step === "welcome" && (
           <div className="flex flex-1 flex-col items-center justify-center text-center">
-            <p className="font-display text-5xl text-ink">Hearth</p>
+            <Ember mood="happy" size={110} />
+            <p className="mt-4 font-display text-5xl text-ink">Hearth</p>
             <p className="mt-3 font-display text-xl text-gold-deep italic">
               Two people. One small ritual.
             </p>

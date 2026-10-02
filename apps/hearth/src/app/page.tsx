@@ -9,14 +9,12 @@ import {
 } from "@/lib/repo";
 import { getPartner, getSessionMember } from "@/lib/session";
 import { localDay } from "@/lib/today";
-import { CountdownChip } from "@/components/countdown-chip";
 import { StreakFlame } from "@/components/flame";
-import { GearIcon, HeartIcon, SealIcon } from "@/components/icons";
-import { MoodFace } from "@/components/mood-row";
-import { NudgeButton } from "@/components/nudge-button";
+import { GearIcon, HeartIcon } from "@/components/icons";
 import { NudgeCard } from "@/components/nudge-card";
 import { PushOptIn } from "@/components/push-opt-in";
 import { TabBar } from "@/components/tab-bar";
+import { TodayCard } from "@/components/today-card";
 import { WeekDots } from "@/components/week-dots";
 
 export const dynamic = "force-dynamic";
@@ -43,9 +41,6 @@ export default async function Home() {
     .get(member.coupleId) as { code: string };
 
   const myAnswer = today.answers.find((a) => a.memberId === member.id);
-  const partnerAnswer = partner
-    ? today.answers.find((a) => a.memberId === partner.id)
-    : undefined;
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-5 px-5 pt-6 pb-28">
@@ -82,66 +77,12 @@ export default async function Home() {
         <p className="text-sm text-ink-soft">
           {greeting()}, {member.name}.
         </p>
-        <div className="card mt-2 flex flex-col gap-4 p-5">
-          <div className="flex items-center justify-between">
-            <span className="chip">{today.category}</span>
-            <span className="text-[10px] font-semibold tracking-widest uppercase text-ink-soft">
-              Today&rsquo;s question
-            </span>
-          </div>
-          <h1
-            id="today-heading"
-            className="font-display text-2xl leading-snug text-ink"
-          >
-            {today.prompt}
-          </h1>
-
-          {!partner ? (
-            <div className="rounded-md border border-line bg-cream p-4 text-sm text-ink-soft">
-              Your ritual is lit. Share the code{" "}
-              <span className="font-mono font-semibold tracking-widest text-gold-deep">
-                {couple.code}
-              </span>{" "}
-              so your person can join from her phone.
-            </div>
-          ) : !myAnswer ? (
-            <div className="flex flex-col gap-3">
-              {partnerAnswer ? (
-                <>
-                  <p className="text-sm text-ink">
-                    <span className="font-semibold">{partner.name}</span> sealed
-                    an answer. Yours unlocks it.
-                  </p>
-                  <CountdownChip />
-                </>
-              ) : (
-                <p className="text-sm text-ink-soft">
-                  Answer to see what {partner.name} wrote.
-                </p>
-              )}
-              <Link href="/answer" className="btn btn-primary w-full">
-                Answer today&rsquo;s question
-              </Link>
-            </div>
-          ) : !partnerAnswer ? (
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center gap-3 rounded-md border border-line bg-cream p-4">
-                <SealIcon size={18} className="shrink-0 text-gold-deep" />
-                <p className="text-sm text-ink">
-                  Sealed. Waiting on{" "}
-                  <span className="font-semibold">{partner.name}</span> to
-                  answer.
-                </p>
-              </div>
-              <NudgeButton partnerName={partner.name} />
-            </div>
-          ) : (
-            <div className="flex flex-col gap-3">
-              <AnswerBlock name={member.name} mood={myAnswer.mood} text={myAnswer.text} mine />
-              <AnswerBlock name={partner.name} mood={partnerAnswer.mood} text={partnerAnswer.text} />
-            </div>
-          )}
-        </div>
+        <TodayCard
+          today={today}
+          member={member}
+          partner={partner}
+          coupleCode={couple.code}
+        />
       </section>
 
       <section className="card p-4" aria-label="This week">
@@ -159,33 +100,5 @@ export default async function Home() {
 
       <TabBar active="/" />
     </main>
-  );
-}
-
-function AnswerBlock({
-  name,
-  mood,
-  text,
-  mine = false,
-}: {
-  name: string;
-  mood: number;
-  text: string;
-  mine?: boolean;
-}) {
-  return (
-    <div
-      className={`rounded-md border p-4 ${
-        mine ? "border-gold-soft bg-gold-soft/15" : "border-line bg-cream"
-      }`}
-    >
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold tracking-widest uppercase text-ink-soft">
-          {name}
-        </span>
-        <MoodFace value={mood} size={18} className="text-gold-deep" />
-      </div>
-      <p className="mt-2 text-sm leading-relaxed text-ink">{text}</p>
-    </div>
   );
 }

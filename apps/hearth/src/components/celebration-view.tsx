@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { HeroFlame } from "./flame";
+import { Ember } from "./ember";
 
 const EMBERS = [
   { left: "18%", delay: "0s", size: 6 },
@@ -52,7 +52,7 @@ export function CelebrationView({
         />
       ))}
 
-      <HeroFlame size={150} />
+      <Ember mood="celebrate" size={150} />
 
       <p
         className="mt-6 font-display text-7xl leading-none text-ink"
