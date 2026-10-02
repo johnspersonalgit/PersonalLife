@@ -84,7 +84,8 @@ await step("02b wrong PIN rejected", async () => {
 await step("03 home as John", async () => {
   await page.getByLabel("Your PIN").fill("1111");
   await tap(page.getByRole("button", { name: "Reconnect" }));
-  await page.waitForSelector("text=sealed an answer");
+  await page.waitForSelector("[data-start-card]");
+  await page.waitForSelector("text=Yours unlocks it.");
   await page.waitForSelector("text=START");
   await settle();
   await shot("hearth-03-home-john");
@@ -159,6 +160,8 @@ await step("07b reopen quest", async () => {
 });
 
 await step("08 notes", async () => {
+  await tapNav("Us");
+  await page.waitForSelector("text=Leave a line");
   await page.getByLabel("Note text").fill("Dinner Friday. I already miss it.");
   await tap(page.getByRole("button", { name: "Send" }));
   await page.waitForSelector("text=Dinner Friday. I already miss it.");
