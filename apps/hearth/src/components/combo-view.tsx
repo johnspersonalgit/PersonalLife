@@ -2,9 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { comboBody, comboTitle, isChestDepth } from "@/lib/thread";
+import { comboBody, comboTitle } from "@/lib/thread";
 import { Ember } from "./ember";
-import { JuiceStats } from "./juice-stats";
 
 const EMBERS = [
   { left: "16%", delay: "0s", size: 6 },
@@ -22,7 +21,6 @@ export function ComboView({
   depth: number;
 }) {
   const [count, setCount] = useState(0);
-  const chest = isChestDepth(depth);
 
   useEffect(() => {
     if (combo <= 0) return;
@@ -66,30 +64,17 @@ export function ComboView({
         className="mt-6 font-display text-7xl leading-none text-ink"
         aria-live="polite"
       >
-        x{count}
+        {count}
       </p>
       <h1 className="mt-2 font-display text-3xl text-ink">
         {comboTitle(combo, depth)}
       </h1>
-      {depth > 0 ? (
-        <p className="mt-2 font-mono text-xs font-extrabold tracking-[0.18em] text-ink-soft uppercase">
-          {chest ? `Chest · Layer ${depth}` : `Layer ${depth}`}
-        </p>
-      ) : null}
       <p className="mt-3 max-w-xs text-sm leading-relaxed text-ink-soft">
         {comboBody(combo, depth)}
       </p>
 
-      <JuiceStats
-        items={[
-          { label: "Combo", value: `x${combo}` },
-          { label: "Layer", value: String(Math.max(1, depth)) },
-          { label: "Thread", value: chest ? "Chest" : "Same" },
-        ]}
-      />
-
       <Link href="/" className="btn btn-primary mt-10 w-full max-w-xs">
-        {chest ? "Open the chest" : depth > 0 ? "Go deeper" : "Continue"}
+        Keep going
       </Link>
     </main>
   );

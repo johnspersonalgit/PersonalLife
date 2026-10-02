@@ -31,7 +31,7 @@ async function tapNav(label) {
 }
 
 function startLink() {
-  return page.getByRole("link", { name: /^(START|DEEPER|CHEST)$/ });
+  return page.getByRole("link", { name: /^(START|DEEPER)$/ });
 }
 
 async function walkQuestionLesson(sentence) {
@@ -117,7 +117,7 @@ await step("06 home revealed", async () => {
 
 await step("06b keep going", async () => {
   await tap(startLink());
-  await page.waitForSelector("text=Same thread");
+  await page.waitForSelector("text=Keep going");
   await page.waitForSelector("[data-lesson-prompt]");
   await page.waitForSelector("[data-from-prompt]");
   const extraPrompt = (
@@ -134,7 +134,7 @@ await step("06b keep going", async () => {
 });
 
 await step("06c next layer", async () => {
-  await tap(page.getByRole("link", { name: /Go deeper|Continue|Open the chest/ }));
+  await tap(page.getByRole("link", { name: /Keep going/ }));
   await page.waitForSelector('[data-combo]');
   await page.waitForSelector('[data-start-label="DEEPER"]');
   await settle();
@@ -143,7 +143,7 @@ await step("06c next layer", async () => {
 
 await step("07 journal", async () => {
   await tapNav("Us");
-  await page.waitForSelector("text=The record that writes itself");
+  await page.waitForSelector("text=What you two have said.");
   await settle();
   await shot("hearth-07-journal");
 });

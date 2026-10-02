@@ -3,74 +3,19 @@ import { calendarDayOf, isCalendarDay } from "@/lib/lesson-keys";
 import { canActOnLesson, iDidMyPart } from "@/lib/lesson-progress";
 import type { DayView, WeekDot } from "@/lib/repo";
 import type { Member } from "@/lib/session";
-import {
-  isChestDepth,
-  pathSection,
-  pathUnit,
-  startLabel,
-} from "@/lib/thread";
+import { startLabel } from "@/lib/thread";
 import { Ember } from "./ember";
-import {
-  BookIcon,
-  CheckIcon,
-  ChestIcon,
-  HeadphonesIcon,
-  LockIcon,
-  MicIcon,
-  StarIcon,
-  VideoIcon,
-} from "./icons";
+import { CheckIcon, LockIcon, StarIcon } from "./icons";
 import { NudgeButton } from "./nudge-button";
 import { PathScroller } from "./path-scroller";
 
 type NodeState = "done" | "grace" | "current" | "locked";
-type IconName = "star" | "headphones" | "video" | "book" | "chest" | "mic";
 
 const WAVE = [50, 28, 18, 28, 50, 72, 82, 72];
 const ROW = 102;
-const ICONS: IconName[] = [
-  "star",
-  "headphones",
-  "video",
-  "book",
-  "star",
-  "chest",
-  "mic",
-  "star",
-];
-
-const CATEGORY_TITLE: Record<string, string> = {
-  us: "Show up for us",
-  heard: "Hear each other",
-  load: "Share the load",
-  gratitude: "Name the good",
-  dreams: "Keep a someday",
-  play: "Play a little",
-};
 
 function canAct(lesson: DayView, member: Member): boolean {
   return canActOnLesson(lesson, member.id);
-}
-
-function iconFor(name: IconName, size: number) {
-  switch (name) {
-    case "star":
-      return <StarIcon size={size} />;
-    case "headphones":
-      return <HeadphonesIcon size={size} />;
-    case "video":
-      return <VideoIcon size={size} />;
-    case "book":
-      return <BookIcon size={size} />;
-    case "chest":
-      return <ChestIcon size={size} />;
-    case "mic":
-      return <MicIcon size={size} />;
-    default: {
-      const _never: never = name;
-      return _never;
-    }
-  }
 }
 
 export function QuestPath({
@@ -100,21 +45,15 @@ export function QuestPath({
   const waiting = Boolean(myAnswer) && !current.complete;
   const person = partner?.name ?? "your person";
   const extra = !isCalendarDay(current.day);
-  const unitTitle = CATEGORY_TITLE[current.category] ?? "Today's tiny quest";
 
-  let startKicker = extra ? "Same thread" : "Today's quest";
-  let startTitle = extra
-    ? `Layer ${current.depth} · keep going`
-    : unitTitle;
-  if (extra && open && isChestDepth(current.depth)) {
-    startKicker = "Chest";
-    startTitle = "The thread just opened.";
-  } else if (!myAnswer && partnerAnswer) {
-    startKicker = `${person} sealed`;
+  let startKicker = extra ? "From the last one" : "Today";
+  let startTitle = "Your turn";
+  if (!myAnswer && partnerAnswer) {
+    startKicker = `${person} already answered`;
     startTitle = "Yours unlocks it.";
   } else if (!myAnswer && !partner) {
     startKicker = "Just you for now";
-    startTitle = "Walk it. They join when ready.";
+    startTitle = "Your turn";
   } else if (waiting && !partner) {
     startKicker = "Sealed";
     startTitle = `Share ${coupleCode}`;
@@ -136,42 +75,35 @@ export function QuestPath({
 
   const rewind =
     visibleDone.at(-1) ?? [...lessons].reverse().find((l) => l.complete);
-  const locked = Array.from({ length: 3 }, (_, i) => ({
-    id: `preview-${i}`,
-    lessonId: i === 0 && rewind ? rewind.id : null,
-    state: "locked" as const,
-    icon: (i === 0 && rewind
-      ? "chest"
-      : ICONS[(past.length + visibleDone.length + 1 + i) % ICONS.length]) as IconName,
-  }));
+  const locked = [
+    {
+      id: "preview-0",
+      lessonId: rewind?.id ?? null,
+      state: "locked" as const,
+    },
+  ];
   const nodes: {
     id: string;
     lessonId: number | null;
     state: NodeState;
-    icon: IconName;
   }[] = [
-    ...past.map((d, i) => {
+    ...past.map((d) => {
       const lesson = lessons.find((l) => l.day === d.day);
       return {
         id: d.day,
         lessonId: lesson?.id ?? null,
         state: (d.state === "grace" ? "grace" : "done") as NodeState,
-        icon: ICONS[i % ICONS.length],
       };
     }),
-    ...visibleDone.map((l, i) => ({
+    ...visibleDone.map((l) => ({
       id: l.day,
       lessonId: l.id,
       state: "done" as const,
-      icon: ICONS[(past.length + i) % ICONS.length],
     })),
     {
       id: current.day,
       lessonId: current.id,
       state: "current" as const,
-      icon: isChestDepth(current.depth)
-        ? "chest"
-        : ICONS[(past.length + visibleDone.length) % ICONS.length],
     },
     ...locked,
   ];
@@ -191,19 +123,15 @@ export function QuestPath({
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-[11px] font-extrabold tracking-[0.16em] text-card/80 uppercase">
-                Section {pathSection(combo)}, Unit {pathUnit(combo)}
-                {current.depth > 0 ? ` · Layer ${current.depth}` : ""}
+                {extra ? "Keep going" : "Today"}
               </p>
               <h1
                 id="today-heading"
                 className="mt-1 font-display text-xl leading-snug text-card"
               >
-                {unitTitle}
+                {current.prompt}
               </h1>
             </div>
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-card/15 text-card">
-              <BookIcon size={20} />
-            </span>
           </div>
         </div>
       </div>
@@ -265,25 +193,13 @@ export function QuestPath({
                   {node.lessonId && node.state !== "current" ? (
                     <Link
                       href={`/quest/${node.lessonId}`}
-                      aria-label={
-                        node.icon === "chest"
-                          ? "Open a finished quest"
-                          : "Open this finished quest"
-                      }
+                      aria-label="Open this finished quest"
                       data-quest-node={String(node.lessonId)}
                     >
-                      <PathNode
-                        state={node.state}
-                        icon={node.icon}
-                        current={isCurrent}
-                      />
+                      <PathNode state={node.state} current={isCurrent} />
                     </Link>
                   ) : (
-                    <PathNode
-                      state={node.state}
-                      icon={node.icon}
-                      current={isCurrent}
-                    />
+                    <PathNode state={node.state} current={isCurrent} />
                   )}
 
                   {isCurrent && open ? (
@@ -293,11 +209,7 @@ export function QuestPath({
                       <Link
                         href="/answer"
                         className={`start-card-btn${
-                          label === "CHEST"
-                            ? " start-bubble-chest"
-                            : label === "DEEPER"
-                              ? " start-bubble-deeper"
-                              : ""
+                          label === "DEEPER" ? " start-bubble-deeper" : ""
                         }`}
                         aria-label={label}
                         data-start-label={label}
@@ -330,11 +242,9 @@ export function QuestPath({
 
 function PathNode({
   state,
-  icon,
   current,
 }: {
   state: NodeState;
-  icon: IconName;
   current: boolean;
 }) {
   const size = current ? 78 : 64;
@@ -373,15 +283,9 @@ function PathNode({
         {state === "done" ? (
           <CheckIcon size={glyph} />
         ) : state === "locked" ? (
-          icon === "chest" ? (
-            <ChestIcon size={glyph - 2} />
-          ) : (
-            <LockIcon size={glyph - 4} />
-          )
-        ) : state === "grace" ? (
-          <StarIcon size={glyph} />
+          <LockIcon size={glyph - 4} />
         ) : (
-          iconFor(icon, glyph)
+          <StarIcon size={glyph} />
         )}
       </div>
     </div>

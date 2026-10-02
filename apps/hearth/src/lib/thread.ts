@@ -1,4 +1,4 @@
-export type StartLabel = "START" | "DEEPER" | "CHEST";
+export type StartLabel = "START" | "DEEPER";
 
 export function nextDepth(parentDepth: number | null | undefined): number {
   return (parentDepth ?? -1) + 1;
@@ -17,26 +17,13 @@ export function pathSection(combo: number): number {
 }
 
 export function startLabel(depth: number): StartLabel {
-  if (isChestDepth(depth)) return "CHEST";
-  if (depth > 0) return "DEEPER";
-  return "START";
+  return depth > 0 ? "DEEPER" : "START";
 }
 
-export function comboTitle(combo: number, depth: number): string {
-  if (isChestDepth(depth)) return "Chest unlocked";
-  if (combo >= 5) return "On a tear";
-  if (combo >= 3) return "Combo";
-  return "Keep going";
+export function comboTitle(combo: number, _depth: number): string {
+  return combo >= 3 ? "Still going" : "Done";
 }
 
-export function comboBody(combo: number, depth: number): string {
-  if (isChestDepth(depth)) {
-    return "The thread just opened a chest. The next node grew out of this one.";
-  }
-  if (depth > 0) {
-    return "Same thread. Tighter cut. Seal the next one to go another layer down.";
-  }
-  return combo === 1
-    ? "The path stays open as long as you do."
-    : "Another node is already waiting.";
+export function comboBody(_combo: number, _depth: number): string {
+  return "Another one is ready if you want it.";
 }

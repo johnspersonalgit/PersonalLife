@@ -332,15 +332,6 @@ body {
   background: var(--color-blue);
 }
 
-.start-bubble-chest {
-  background: var(--color-honey);
-  color: var(--color-ink);
-}
-
-.start-bubble.start-bubble-chest::before {
-  background: var(--color-honey);
-}
-
 .start-bubble::before {
   content: "";
   position: absolute;

@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Ember } from "./ember";
-import { JuiceStats } from "./juice-stats";
 
 const EMBERS = [
   { left: "18%", delay: "0s", size: 6 },
@@ -61,27 +60,21 @@ export function CelebrationView({
       >
         {count}
       </p>
-      <h1 className="mt-2 font-display text-3xl text-ink">Quest complete</h1>
+      <h1 className="mt-2 font-display text-3xl text-ink">
+        {streak <= 1 ? "First day" : "Days in a row"}
+      </h1>
       <p className="mt-3 max-w-xs text-sm leading-relaxed text-ink-soft">
         {streak <= 1
-          ? "The flame is lit. The next node is already waiting."
-          : "The flame grew. Keep the path moving."}
+          ? "You both answered today."
+          : "You both answered again today."}
       </p>
-
-      <JuiceStats
-        items={[
-          { label: "Streak", value: String(streak) },
-          { label: "Today", value: "Sealed" },
-          { label: "Next", value: "Open" },
-        ]}
-      />
 
       {milestoneName ? (
         <div className="card animate-rise mt-6 w-full max-w-xs px-5 py-4">
           <p className="text-[10px] font-semibold tracking-widest uppercase text-gold-deep">
-            Milestone reached
+            {milestoneName}
           </p>
-          <p className="mt-1 font-display text-xl text-ink">{milestoneName}</p>
+          <p className="mt-1 text-sm text-ink-soft">{streak} days</p>
         </div>
       ) : null}
 

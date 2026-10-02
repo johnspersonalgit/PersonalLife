@@ -50,11 +50,6 @@ export default async function QuestPage({
         </span>
         <span className="chip">{lesson.category}</span>
         <span className={`chip ${KIND_CHIP[lesson.kind]}`}>{lesson.kind}</span>
-        {lesson.depth > 0 ? (
-          <span className="chip border-ink bg-blue text-card">
-            Layer {lesson.depth}
-          </span>
-        ) : null}
       </header>
 
       {parent ? (

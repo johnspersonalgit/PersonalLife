@@ -103,12 +103,8 @@ function QuestionLesson({
       {step === "intro" ? (
         <Intro
           prompt={prompt}
-          blurb={
-            depth > 0
-              ? `Same thread. Layer ${depth}. Five tiny taps, then the next node grows out of this one.`
-              : `Five tiny taps. About a minute. ${personName} cannot see yours until they finish too.`
-          }
-          eyebrow={depth > 0 ? "Same thread" : "Today's quest"}
+          blurb={`Five tiny taps. About a minute. ${personName} cannot see yours until they finish too.`}
+          eyebrow={depth > 0 ? "Keep going" : "Today's quest"}
           fromPrompt={fromPrompt}
           onContinue={() => setStep("mood")}
         />

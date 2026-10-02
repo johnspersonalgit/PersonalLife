@@ -38,12 +38,12 @@ check("section 1 at combo 1", pathSection(1), 1);
 check("section 2 at combo 21", pathSection(21), 2);
 check("calendar start", startLabel(0), "START");
 check("thread start", startLabel(1), "DEEPER");
-check("chest start", startLabel(3), "CHEST");
-check("combo title at 2", comboTitle(2, 1), "Keep going");
-check("combo title at 3", comboTitle(3, 2), "Combo");
-check("chest title", comboTitle(4, 3), "Chest unlocked");
-check("deeper body mentions thread", comboBody(2, 1).includes("Same thread"), true);
-check("chest body mentions chest", comboBody(4, 3).includes("chest"), true);
+check("third layer stays DEEPER", startLabel(3), "DEEPER");
+check("combo title at 2", comboTitle(2, 1), "Done");
+check("combo title at 3", comboTitle(3, 2), "Still going");
+check("combo title at 4", comboTitle(4, 3), "Still going");
+check("combo body stays plain", comboBody(2, 1), "Another one is ready if you want it.");
+check("combo body does not change at 4", comboBody(4, 3), "Another one is ready if you want it.");
 
 function mintChild(lessons, memberId, today) {
   const todayLessons = lessons.filter((l) => calendarDayOf(l.day) === today);
@@ -93,7 +93,7 @@ extra2.answers = [{ memberId: 1 }];
 const extra3 = mintChild(lessons, 1, today);
 check("third extra parents the second extra", extra3.parentId, extra2.id);
 check("third extra is a chest", extra3.depth, 3);
-check("third extra start is CHEST", startLabel(extra3.depth), "CHEST");
+check("third extra start is DEEPER", startLabel(extra3.depth), "DEEPER");
 
 function sessionCombo(rows, memberId) {
   return rows.filter(

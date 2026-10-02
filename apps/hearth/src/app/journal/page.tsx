@@ -23,16 +23,14 @@ export default async function JournalPage() {
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-5 pt-6 pb-28">
       <header>
         <h1 className="font-display text-3xl text-ink">Us</h1>
-        <p className="mt-1 text-sm text-ink-soft">
-          The record that writes itself, one thread at a time.
-        </p>
+        <p className="mt-1 text-sm text-ink-soft">What you two have said.</p>
       </header>
 
       {threads.length === 0 ? (
         <div className="card flex flex-col items-center gap-2 p-6 text-center">
           <Ember mood="sleepy" size={112} />
           <p className="text-sm text-ink-soft">
-            No entries yet. Walk today&rsquo;s path and the record begins.
+            Nothing here yet. Answer today&rsquo;s question first.
           </p>
         </div>
       ) : (
@@ -106,10 +104,7 @@ export default async function JournalPage() {
                       data-quest-link={layer.complete ? "done" : "open"}
                       data-thread-layer={layer.depth}
                     >
-                      <p className="text-[10px] font-extrabold tracking-[0.14em] text-ink-soft uppercase">
-                        Layer {layer.depth}
-                      </p>
-                      <p className="mt-1 text-sm leading-snug text-ink">
+                      <p className="text-sm leading-snug text-ink">
                         {layer.prompt}
                       </p>
                     </Link>

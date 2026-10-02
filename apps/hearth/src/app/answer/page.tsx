@@ -59,11 +59,6 @@ export default async function AnswerPage() {
         <span className={`chip ${KIND_CHIP[lesson.kind]}`}>
           {KIND_LABELS[lesson.kind]}
         </span>
-        {lesson.depth > 0 ? (
-          <span className="chip border-ink bg-blue text-card">
-            Layer {lesson.depth}
-          </span>
-        ) : null}
       </header>
 
       {alreadyDone ? (
