@@ -1,4 +1,5 @@
 import db from "./db";
+import { choosePrompt } from "./pick-prompt";
 import { isDayComplete, walkStreak, type PromptKind } from "./streak";
 import { shiftDay } from "./time";
 import { localDay } from "./today";
@@ -74,14 +75,6 @@ type AnswerRow = {
   created_at: string;
 };
 
-function hashString(s: string): number {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) {
-    h = (h * 31 + s.charCodeAt(i)) | 0;
-  }
-  return Math.abs(h);
-}
-
 function coupleCategories(coupleId: number): string[] {
   const row = db
     .prepare("SELECT categories FROM couples WHERE id = ?")
@@ -94,7 +87,11 @@ function coupleCategories(coupleId: number): string[] {
   }
 }
 
-function pickPromptId(coupleId: number, day: string): { id: number; kind: PromptKind } {
+function pickPromptId(
+  coupleId: number,
+  day: string,
+  preferKind?: PromptKind,
+): { id: number; kind: PromptKind } {
   const cats = coupleCategories(coupleId);
   const all = (
     cats.length
@@ -108,18 +105,14 @@ function pickPromptId(coupleId: number, day: string): { id: number; kind: Prompt
           .all() as { id: number; kind: PromptKind }[])
   );
 
-  const recent = new Set(
-    (
-      db
-        .prepare(
-          "SELECT prompt_id FROM days WHERE couple_id = ? ORDER BY day DESC LIMIT 21",
-        )
-        .all(coupleId) as { prompt_id: number }[]
-    ).map((r) => r.prompt_id),
-  );
-  const pool = all.filter((p) => !recent.has(p.id));
-  const source = pool.length ? pool : all;
-  return source[hashString(`${coupleId}:${day}`) % source.length];
+  const recent = (
+    db
+      .prepare(
+        "SELECT prompt_id FROM days WHERE couple_id = ? ORDER BY day DESC LIMIT 21",
+      )
+      .all(coupleId) as { prompt_id: number }[]
+  ).map((r) => r.prompt_id);
+  return choosePrompt(all, recent, coupleId, day, preferKind);
 }
 
 function toDayView(row: DayRow, memberCount: number): DayView {
@@ -192,12 +185,44 @@ export function memberCount(coupleId: number): number {
   return row.n;
 }
 
+function coupleDayCount(coupleId: number): number {
+  return (
+    db
+      .prepare("SELECT COUNT(*) AS n FROM days WHERE couple_id = ?")
+      .get(coupleId) as { n: number }
+  ).n;
+}
+
+function rewriteUnansweredFirstDay(coupleId: number, day: string): void {
+  const row = db
+    .prepare(
+      `SELECT d.id, p.kind,
+         (SELECT COUNT(*) FROM answers a WHERE a.day_id = d.id) AS answered,
+         (SELECT COUNT(*) FROM guesses g WHERE g.day_id = d.id) AS guessed
+       FROM days d JOIN prompts p ON p.id = d.prompt_id
+       WHERE d.couple_id = ? AND d.day = ?`,
+    )
+    .get(coupleId, day) as
+    | { id: number; kind: PromptKind; answered: number; guessed: number }
+    | undefined;
+  if (!row) return;
+  if (coupleDayCount(coupleId) !== 1) return;
+  if (row.answered || row.guessed) return;
+  if (row.kind === "question") return;
+  const picked = pickPromptId(coupleId, `${day}:first`, "question");
+  db.prepare("UPDATE days SET prompt_id = ?, answerer_id = NULL WHERE id = ?").run(
+    picked.id,
+    row.id,
+  );
+}
+
 export function ensureDay(coupleId: number, day: string): DayView {
   const existing = db
     .prepare("SELECT 1 FROM days WHERE couple_id = ? AND day = ?")
     .get(coupleId, day);
   if (!existing) {
-    const picked = pickPromptId(coupleId, day);
+    const isFirst = coupleDayCount(coupleId) === 0;
+    const picked = pickPromptId(coupleId, day, isFirst ? "question" : undefined);
     let answererId: number | null = null;
     if (picked.kind === "guess") {
       const members = db
@@ -216,6 +241,8 @@ export function ensureDay(coupleId: number, day: string): DayView {
     db.prepare(
       "INSERT INTO days (couple_id, day, prompt_id, answerer_id) VALUES (?, ?, ?, ?)",
     ).run(coupleId, day, picked.id, answererId);
+  } else {
+    rewriteUnansweredFirstDay(coupleId, day);
   }
   const row = db
     .prepare(

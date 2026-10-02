@@ -109,5 +109,6 @@ check("mission needs both", isDayComplete("mission", 2, 0, 2), true);
 check("guess needs answer plus guess", isDayComplete("guess", 1, 0, 2), false);
 check("guess complete", isDayComplete("guess", 1, 1, 2), true);
 check("guess: two answers without guess is not complete", isDayComplete("guess", 2, 0, 2), false);
+check("solo seat does not complete a question", isDayComplete("question", 1, 0, 1), false);
 
 process.exit(failures ? 1 : 0);

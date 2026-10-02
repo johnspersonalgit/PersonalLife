@@ -11,7 +11,10 @@ export function isDayComplete(
   memberCount: number,
 ): boolean {
   if (kind === "guess") return answered >= 1 && guessed >= 1;
-  return answered >= memberCount;
+  // A two-person ritual never completes on a solo seat. memberCount of 1
+  // used to mark the day done after one answer and hide the path.
+  void memberCount;
+  return answered >= 2;
 }
 
 export type StreakWalk = {

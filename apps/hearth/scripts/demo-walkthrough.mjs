@@ -67,19 +67,22 @@ await step("03 home as John", async () => {
   await page.getByLabel("Your PIN").fill("1111");
   await tap(page.getByRole("button", { name: "Reconnect" }));
   await page.waitForSelector("text=sealed an answer");
+  await page.waitForSelector("text=START");
   await settle();
   await shot("hearth-03-home-john");
 });
 
 await step("04 answer form", async () => {
-  await tap(page.getByRole("link", { name: /Answer today/ }));
-  await page.waitForSelector("text=Seal my answer");
+  await tap(page.getByRole("link", { name: "START" }));
+  await page.waitForSelector("text=One step");
   await settle();
   await shot("hearth-04-answer-form");
 });
 
 await step("05 celebration", async () => {
+  await tap(page.getByRole("button", { name: "Continue" }));
   await tap(page.getByRole("button", { name: /Good/ }));
+  await tap(page.getByRole("button", { name: "Continue" }));
   await page.locator("textarea").fill(
     "Long day but a good one. Your note this morning carried the 3pm meeting. Porch photos looked perfect.",
   );

@@ -65,13 +65,14 @@ export function TodayCard({
 
       {!partner ? (
         <div className="rounded-md border border-line bg-cream p-4 text-sm text-ink-soft">
-          Your ritual is lit. Share the code{" "}
+          Share{" "}
           <span className="font-mono font-semibold tracking-widest text-gold-deep">
             {coupleCode}
           </span>{" "}
-          so your person can join from her phone.
+          when she is ready. You can still walk today&rsquo;s path now.
         </div>
-      ) : today.kind === "rapid" ? (
+      ) : null}
+      {today.kind === "rapid" ? (
         <RapidState
           today={today}
           member={member}
@@ -114,28 +115,29 @@ function QuestionState({
   partnerAnswer,
 }: {
   member: Member;
-  partner: Member;
+  partner: Member | null;
   myAnswer: { mood: number; text: string; avatar: string | null; color: string | null } | undefined;
   partnerAnswer: { mood: number; text: string; avatar: string | null; color: string | null } | undefined;
 }) {
+  const person = partner?.name ?? "your person";
   if (!myAnswer) {
     return (
       <div className="flex flex-col gap-3">
         {partnerAnswer ? (
           <>
             <p className="text-sm text-ink">
-              <span className="font-semibold">{partner.name}</span> sealed an
+              <span className="font-semibold">{person}</span> sealed an
               answer. Yours unlocks it.
             </p>
             <CountdownChip />
           </>
         ) : (
           <p className="text-sm text-ink-soft">
-            Answer to see what {partner.name} wrote.
+            Answer to see what {person} wrote.
           </p>
         )}
         <Link href="/answer" className="btn btn-primary w-full">
-          Answer today&rsquo;s question
+          START
         </Link>
       </div>
     );
@@ -143,21 +145,20 @@ function QuestionState({
   if (!partnerAnswer) {
     return (
       <div className="flex flex-col gap-3">
-        <Sealed text={`Sealed. Waiting on ${partner.name} to answer.`} />
-        <NudgeButton partnerName={partner.name} />
+        <Sealed text={`Sealed. Waiting on ${person} to answer.`} />
+        {partner ? <NudgeButton partnerName={partner.name} /> : null}
       </div>
     );
   }
   return (
     <div className="flex flex-col gap-3">
       <AnswerBlock name={member.name} mood={myAnswer.mood} text={myAnswer.text} avatar={myAnswer.avatar} color={myAnswer.color} mine />
-      <AnswerBlock name={partner.name} mood={partnerAnswer.mood} text={partnerAnswer.text} avatar={partnerAnswer.avatar} color={partnerAnswer.color} />
+      <AnswerBlock name={partner?.name ?? "Your person"} mood={partnerAnswer.mood} text={partnerAnswer.text} avatar={partnerAnswer.avatar} color={partnerAnswer.color} />
     </div>
   );
 }
 
 function RapidState({
-  today,
   member,
   partner,
   myAnswer,
@@ -165,26 +166,17 @@ function RapidState({
 }: {
   today: DayView;
   member: Member;
-  partner: Member;
+  partner: Member | null;
   myAnswer: { text: string; avatar: string | null; color: string | null } | undefined;
   partnerAnswer: { text: string; avatar: string | null; color: string | null } | undefined;
 }) {
+  const person = partner?.name ?? "your person";
   if (!myAnswer) {
     return (
       <div className="flex flex-col gap-3">
-        <div className="flex flex-col gap-2">
-          {today.options.map((o) => (
-            <div
-              key={o}
-              className="rounded-md border border-line bg-cream px-4 py-3 text-sm font-medium text-ink"
-            >
-              {o}
-            </div>
-          ))}
-        </div>
         {partnerAnswer ? <CountdownChip /> : null}
         <Link href="/answer" className="btn btn-primary w-full">
-          Make your pick
+          START
         </Link>
       </div>
     );
@@ -193,9 +185,9 @@ function RapidState({
     return (
       <div className="flex flex-col gap-3">
         <Sealed
-          text={`You picked "${myAnswer.text}". ${partner.name}'s pick is still coming.`}
+          text={`You picked "${myAnswer.text}". ${person}'s pick is still coming.`}
         />
-        <NudgeButton partnerName={partner.name} />
+        {partner ? <NudgeButton partnerName={partner.name} /> : null}
       </div>
     );
   }
@@ -212,7 +204,7 @@ function RapidState({
         {match ? "You match" : "Opposite ends today"}
       </span>
       <PickBlock name={member.name} pick={myAnswer.text} avatar={myAnswer.avatar} color={myAnswer.color} mine />
-      <PickBlock name={partner.name} pick={partnerAnswer.text} avatar={partnerAnswer.avatar} color={partnerAnswer.color} />
+      <PickBlock name={partner?.name ?? "Your person"} pick={partnerAnswer.text} avatar={partnerAnswer.avatar} color={partnerAnswer.color} />
     </div>
   );
 }
@@ -226,7 +218,7 @@ function MissionState({
 }: {
   today: DayView;
   member: Member;
-  partner: Member;
+  partner: Member | null;
   myAnswer: { text: string; avatar: string | null; color: string | null } | undefined;
   partnerAnswer: { text: string; avatar: string | null; color: string | null } | undefined;
 }) {
@@ -240,18 +232,18 @@ function MissionState({
             color={member.color}
           />
           <MissionRow
-            name={partner.name}
+            name={partner?.name ?? "Your person"}
             done={Boolean(partnerAnswer)}
-            color={partner.color}
+            color={partner?.color ?? null}
           />
         </div>
         {!myAnswer ? (
           <Link href="/answer" className="btn btn-primary w-full">
-            Do the mission
+            START
           </Link>
-        ) : (
+        ) : partner ? (
           <NudgeButton partnerName={partner.name} />
-        )}
+        ) : null}
       </div>
     );
   }
@@ -264,7 +256,7 @@ function MissionState({
         <PickBlock name={member.name} pick={myAnswer.text} avatar={myAnswer.avatar} color={myAnswer.color} mine />
       ) : null}
       {partnerAnswer?.text ? (
-        <PickBlock name={partner.name} pick={partnerAnswer.text} avatar={partnerAnswer.avatar} color={partnerAnswer.color} />
+        <PickBlock name={partner?.name ?? "Your person"} pick={partnerAnswer.text} avatar={partnerAnswer.avatar} color={partnerAnswer.color} />
       ) : null}
     </div>
   );
@@ -279,12 +271,12 @@ function GuessState({
 }: {
   today: DayView;
   member: Member;
-  partner: Member;
+  partner: Member | null;
   myAnswer: { text: string } | undefined;
   myGuess: { text: string } | undefined;
 }) {
   const iAmAnswerer = today.answererId === member.id;
-  const answererName = iAmAnswerer ? member.name : partner.name;
+  const answererName = iAmAnswerer ? member.name : (partner?.name ?? "your person");
   const answererAnswered = today.answers.some(
     (a) => a.memberId === today.answererId,
   );
@@ -295,10 +287,10 @@ function GuessState({
         <div className="flex flex-col gap-3">
           <p className="text-sm text-ink">
             Today starts with you. Answer about yourself, and{" "}
-            <span className="font-semibold">{partner.name}</span> guesses.
+            <span className="font-semibold">{partner?.name ?? "your person"}</span> guesses.
           </p>
           <Link href="/answer" className="btn btn-primary w-full">
-            Answer first
+            START
           </Link>
         </div>
       );
@@ -309,7 +301,7 @@ function GuessState({
           <Sealed
             text={`Today starts with ${answererName}. They answer, you guess what they said.`}
           />
-          <NudgeButton partnerName={partner.name} />
+          {partner ? <NudgeButton partnerName={partner.name} /> : null}
         </div>
       );
     }
@@ -322,7 +314,7 @@ function GuessState({
           </p>
           <CountdownChip />
           <Link href="/answer" className="btn btn-primary w-full">
-            Make your guess
+            START
           </Link>
         </div>
       );
@@ -346,7 +338,7 @@ function GuessState({
         mine={iAmAnswerer}
       />
       <PickBlock
-        name={`${iAmAnswerer ? partner.name : member.name} guessed`}
+        name={`${iAmAnswerer ? (partner?.name ?? "Your person") : member.name} guessed`}
         pick={guessText ?? ""}
         avatar={guessRow?.avatar ?? null}
         color={guessRow?.color ?? null}

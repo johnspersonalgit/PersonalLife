@@ -3,12 +3,8 @@ import { redirect } from "next/navigation";
 import { ensureDay } from "@/lib/repo";
 import { getPartner, getSessionMember } from "@/lib/session";
 import { localDay } from "@/lib/today";
-import { AnswerForm } from "@/components/answer-form";
-import { GuessFlow } from "@/components/guess-flow";
 import { BackIcon } from "@/components/icons";
-import { MissionForm } from "@/components/mission-form";
-import { NudgeButton } from "@/components/nudge-button";
-import { RapidForm } from "@/components/rapid-form";
+import { QuestLesson } from "@/components/quest-lesson";
 import { KIND_CHIP } from "@/components/today-card";
 
 export const dynamic = "force-dynamic";
@@ -30,59 +26,24 @@ export default async function AnswerPage() {
 
   const myAnswer = today.answers.find((a) => a.memberId === member.id);
   const myGuess = today.guesses.find((g) => g.memberId === member.id);
+  const iAmAnswerer = today.answererId === member.id;
+  const answererAnswered = today.answers.some(
+    (a) => a.memberId === today.answererId,
+  );
 
-  let body: React.ReactNode;
-  const prompt = today.prompt;
+  const alreadyDone =
+    today.kind === "guess"
+      ? iAmAnswerer
+        ? Boolean(myAnswer)
+        : Boolean(myGuess) || !answererAnswered
+      : Boolean(myAnswer);
 
-  if (today.kind === "rapid") {
-    body = myAnswer ? (
-      <SealedNote text="Your pick is sealed. Waiting on your person." />
-    ) : (
-      <RapidForm options={today.options} />
-    );
-  } else if (today.kind === "mission") {
-    body = myAnswer ? (
-      <SealedNote text="Marked done. Waiting on your person." />
-    ) : (
-      <MissionForm />
-    );
-  } else if (today.kind === "guess") {
-    const iAmAnswerer = today.answererId === member.id;
-    const answererName = iAmAnswerer
-      ? member.name
-      : (partner?.name ?? "Your person");
-    if (iAmAnswerer) {
-      body = myAnswer ? (
-        <SealedNote text="Your answer is sealed. Your person is guessing now." />
-      ) : (
-        <GuessFlow role="answerer" answererName={answererName} />
-      );
-    } else {
-      const answererAnswered = today.answers.some(
-        (a) => a.memberId === today.answererId,
-      );
-      if (myGuess) {
-        body = <SealedNote text="Your guess is sealed. Reveal lands on Today." />;
-      } else if (answererAnswered) {
-        body = <GuessFlow role="guesser" answererName={answererName} />;
-      } else {
-        body = (
-          <div className="flex flex-col gap-4">
-            <SealedNote
-              text={`This one starts with ${answererName}. They answer about themselves, then you guess.`}
-            />
-            {partner ? <NudgeButton partnerName={partner.name} /> : null}
-          </div>
-        );
-      }
-    }
-  } else {
-    body = myAnswer ? (
-      <SealedNote text="Your answer is sealed. Waiting on your person." />
-    ) : (
-      <AnswerForm />
-    );
-  }
+  const role =
+    today.kind === "guess"
+      ? iAmAnswerer
+        ? "answerer"
+        : "guesser"
+      : "solo";
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-5 pt-6 pb-10">
@@ -100,17 +61,21 @@ export default async function AnswerPage() {
         </span>
       </header>
 
-      <h1 className="font-display text-3xl leading-snug text-ink">{prompt}</h1>
-
-      {body}
+      {alreadyDone ? (
+        <p className="card p-4 text-sm text-ink">
+          {today.kind === "guess" && !iAmAnswerer && !answererAnswered
+            ? `This one starts with ${partner?.name ?? "your person"}. They go first.`
+            : "This step is sealed. Head back to the path."}
+        </p>
+      ) : (
+        <QuestLesson
+          kind={today.kind}
+          prompt={today.prompt}
+          options={today.options}
+          role={role}
+          personName={partner?.name ?? "your person"}
+        />
+      )}
     </main>
-  );
-}
-
-function SealedNote({ text }: { text: string }) {
-  return (
-    <div className="rounded-md border border-line bg-cream p-4 text-sm text-ink">
-      {text}
-    </div>
   );
 }

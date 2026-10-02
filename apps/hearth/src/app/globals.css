@@ -231,6 +231,10 @@ body {
   animation: rise-in 360ms ease both;
 }
 
+.path-node-current {
+  animation: flame-pulse 1.4s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   ::before,

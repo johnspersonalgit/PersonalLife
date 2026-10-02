@@ -15,6 +15,7 @@ import { GearIcon, HeartIcon } from "@/components/icons";
 import { NudgeCard } from "@/components/nudge-card";
 import { PushOptIn } from "@/components/push-opt-in";
 import { TabBar } from "@/components/tab-bar";
+import { QuestPath } from "@/components/quest-path";
 import { TodayCard } from "@/components/today-card";
 import { WeekDots } from "@/components/week-dots";
 
@@ -96,12 +97,22 @@ export default async function Home() {
         <p className="font-display text-lg text-ink">
           {greeting()}, {member.name}.
         </p>
-        <TodayCard
+        <QuestPath
           today={today}
           member={member}
           partner={partner}
           coupleCode={couple.code}
         />
+        {today.complete ? (
+          <div className="mt-6">
+            <TodayCard
+              today={today}
+              member={member}
+              partner={partner}
+              coupleCode={couple.code}
+            />
+          </div>
+        ) : null}
       </section>
 
       <section className="card p-4" aria-label="This week">
