@@ -1,6 +1,7 @@
 import Link from "next/link";
+import { calendarDayOf, isCalendarDay } from "@/lib/lesson-keys";
+import { canActOnLesson, iDidMyPart } from "@/lib/lesson-progress";
 import type { DayView, WeekDot } from "@/lib/repo";
-import { shiftDay } from "@/lib/time";
 import type { Member } from "@/lib/session";
 import { Ember } from "./ember";
 import {
@@ -41,18 +42,8 @@ const CATEGORY_TITLE: Record<string, string> = {
   play: "Play a little",
 };
 
-function canAct(today: DayView, member: Member): boolean {
-  const myAnswer = today.answers.some((a) => a.memberId === member.id);
-  const myGuess = today.guesses.some((g) => g.memberId === member.id);
-  if (today.kind === "guess") {
-    const iAmAnswerer = today.answererId === member.id;
-    const answererAnswered = today.answers.some(
-      (a) => a.memberId === today.answererId,
-    );
-    if (iAmAnswerer) return !myAnswer;
-    return answererAnswered && !myGuess;
-  }
-  return !myAnswer;
+function canAct(lesson: DayView, member: Member): boolean {
+  return canActOnLesson(lesson, member.id);
 }
 
 function iconFor(name: IconName, size: number) {
@@ -78,27 +69,34 @@ function iconFor(name: IconName, size: number) {
 
 export function QuestPath({
   today,
+  current,
+  lessons,
   week,
   member,
   partner,
   coupleCode,
 }: {
   today: DayView;
+  current: DayView;
+  lessons: DayView[];
   week: WeekDot[];
   member: Member;
   partner: Member | null;
   coupleCode: string;
 }) {
-  const myAnswer = today.answers.find((a) => a.memberId === member.id);
+  const myAnswer = current.answers.find((a) => a.memberId === member.id);
   const partnerAnswer = partner
-    ? today.answers.find((a) => a.memberId === partner.id)
+    ? current.answers.find((a) => a.memberId === partner.id)
     : undefined;
-  const open = canAct(today, member);
-  const waiting = Boolean(myAnswer) && !today.complete;
+  const open = canAct(current, member);
+  const waiting = Boolean(myAnswer) && !current.complete;
   const person = partner?.name ?? "your person";
+  const extra = !isCalendarDay(current.day);
 
-  let caption = CATEGORY_TITLE[today.category] ?? "Today's tiny quest";
-  if (!myAnswer && partnerAnswer) {
+  let caption = CATEGORY_TITLE[current.category] ?? "Today's tiny quest";
+  if (extra && open) {
+    caption = "Keep going. Another tiny quest.";
+  } else if (!myAnswer && partnerAnswer) {
     caption = `${person} sealed an answer. Yours unlocks it.`;
   } else if (!myAnswer && !partner) {
     caption = "You can do today now. She joins when she is ready.";
@@ -106,17 +104,20 @@ export function QuestPath({
     caption = `Sealed. Share ${coupleCode} so she can unlock it.`;
   } else if (waiting) {
     caption = `Sealed. Waiting on ${person}.`;
-  } else if (today.complete) {
+  } else if (current.complete) {
     caption = "You both showed up. The path is open.";
   }
 
+  const calendarToday = calendarDayOf(today.day);
   const past = week.filter(
     (d) =>
-      d.day !== today.day && (d.state === "done" || d.state === "grace"),
+      d.day !== calendarToday && (d.state === "done" || d.state === "grace"),
   );
-  const futureDays = Array.from({ length: 7 }, (_, i) =>
-    shiftDay(today.day, i + 1),
+  const todayLessons = lessons.filter(
+    (l) => calendarDayOf(l.day) === calendarToday,
   );
+  const doneToday = todayLessons.filter((l) => iDidMyPart(l, member.id));
+  const visibleDone = doneToday.slice(-8);
 
   const nodes: {
     id: string;
@@ -128,15 +129,20 @@ export function QuestPath({
       state: (d.state === "grace" ? "grace" : "done") as NodeState,
       icon: ICONS[i % ICONS.length],
     })),
+    ...visibleDone.map((l, i) => ({
+      id: l.day,
+      state: "done" as const,
+      icon: ICONS[(past.length + i) % ICONS.length],
+    })),
     {
-      id: today.day,
-      state: today.complete ? "done" : ("current" as const),
-      icon: ICONS[past.length % ICONS.length],
+      id: current.day,
+      state: "current" as const,
+      icon: ICONS[(past.length + visibleDone.length) % ICONS.length],
     },
-    ...futureDays.map((day, i) => ({
-      id: day,
+    ...Array.from({ length: 6 }, (_, i) => ({
+      id: `preview-${i}`,
       state: "locked" as const,
-      icon: ICONS[(past.length + 1 + i) % ICONS.length],
+      icon: ICONS[(past.length + visibleDone.length + 1 + i) % ICONS.length],
     })),
   ];
 

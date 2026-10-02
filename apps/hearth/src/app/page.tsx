@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import db from "@/lib/db";
 import {
   ensureDay,
+  ensureOpenLesson,
+  getLessons,
   getStreak,
   unseenNudgesFor,
   weekStatus,
@@ -26,6 +28,8 @@ export default async function Home() {
 
   const partner = getPartner(member);
   const today = ensureDay(member.coupleId, localDay());
+  const current = ensureOpenLesson(member.coupleId, member.id);
+  const lessons = getLessons(member.coupleId);
   const streak = getStreak(member.coupleId);
   const week = weekStatus(member.coupleId);
   const nudges = unseenNudgesFor(member.id, member.coupleId);
@@ -82,6 +86,8 @@ export default async function Home() {
 
       <QuestPath
         today={today}
+        current={current}
+        lessons={lessons}
         week={week}
         member={member}
         partner={partner}

@@ -6,12 +6,14 @@ import { revalidatePath } from "next/cache";
 import db from "./db";
 import { hashPin, isValidPin, verifyPin } from "./pin.mjs";
 import { sendToMember } from "./push";
+import { isCalendarDay } from "./lesson-keys";
 import {
   addCelebrated,
-  ensureDay,
+  ensureOpenLesson,
   getStreak,
   recordBest,
   MILESTONES,
+  type DayView,
 } from "./repo";
 import { getSessionMember, getPartner, type Member } from "./session";
 import { localDay } from "./today";
@@ -174,13 +176,14 @@ export async function updatePin(
   return { ok: true };
 }
 
-async function finishDay(member: Member): Promise<never> {
+async function finishLesson(member: Member, lesson: DayView): Promise<never> {
   const today = localDay();
   const streak = getStreak(member.coupleId, today);
   recordBest(member.coupleId, streak.current);
+  ensureOpenLesson(member.coupleId, member.id, today);
 
   let milestone: number | null = null;
-  if (streak.todayComplete) {
+  if (isCalendarDay(lesson.day) && streak.todayComplete) {
     for (const m of MILESTONES) {
       if (streak.current === m) {
         milestone = m;
@@ -190,6 +193,9 @@ async function finishDay(member: Member): Promise<never> {
   }
 
   revalidatePath("/");
+  if (!isCalendarDay(lesson.day)) {
+    redirect("/");
+  }
   redirect(
     `/celebration?s=${streak.current}${milestone ? `&m=${milestone}` : ""}`,
   );
@@ -204,20 +210,18 @@ export async function submitAnswer(formData: FormData) {
   }
   if (!text) throw new Error("Write a few words first");
 
-  const today = localDay();
-  const day = ensureDay(member.coupleId, today);
+  const day = ensureOpenLesson(member.coupleId, member.id);
   db.prepare(
     `INSERT INTO answers (day_id, member_id, mood, text) VALUES (?, ?, ?, ?)
      ON CONFLICT(day_id, member_id) DO UPDATE SET mood = excluded.mood, text = excluded.text`,
   ).run(day.id, member.id, mood, text.slice(0, 2000));
 
-  await finishDay(member);
+  await finishLesson(member, day);
 }
 
 export async function submitRapid(choice: string) {
   const member = await requireMember();
-  const today = localDay();
-  const day = ensureDay(member.coupleId, today);
+  const day = ensureOpenLesson(member.coupleId, member.id);
   if (day.kind !== "rapid" || !day.options.includes(choice)) {
     throw new Error("That is not one of today's options");
   }
@@ -226,28 +230,26 @@ export async function submitRapid(choice: string) {
      ON CONFLICT(day_id, member_id) DO UPDATE SET text = excluded.text`,
   ).run(day.id, member.id, choice);
 
-  await finishDay(member);
+  await finishLesson(member, day);
 }
 
 export async function submitMission(note: string) {
   const member = await requireMember();
-  const today = localDay();
-  const day = ensureDay(member.coupleId, today);
+  const day = ensureOpenLesson(member.coupleId, member.id);
   if (day.kind !== "mission") throw new Error("Today is not a mission");
   db.prepare(
     `INSERT INTO answers (day_id, member_id, mood, text) VALUES (?, ?, 0, ?)
      ON CONFLICT(day_id, member_id) DO UPDATE SET text = excluded.text`,
   ).run(day.id, member.id, note.trim().slice(0, 2000));
 
-  await finishDay(member);
+  await finishLesson(member, day);
 }
 
 export async function submitGuessAnswer(text: string) {
   const member = await requireMember();
   const trimmed = text.trim();
   if (!trimmed) throw new Error("Write your answer first");
-  const today = localDay();
-  const day = ensureDay(member.coupleId, today);
+  const day = ensureOpenLesson(member.coupleId, member.id);
   if (day.kind !== "guess") throw new Error("Today is not a guess day");
   if (day.answererId !== member.id) throw new Error("Today is your person's answer");
   db.prepare(
@@ -255,15 +257,14 @@ export async function submitGuessAnswer(text: string) {
      ON CONFLICT(day_id, member_id) DO UPDATE SET text = excluded.text`,
   ).run(day.id, member.id, trimmed.slice(0, 2000));
 
-  await finishDay(member);
+  await finishLesson(member, day);
 }
 
 export async function submitGuess(text: string) {
   const member = await requireMember();
   const trimmed = text.trim();
   if (!trimmed) throw new Error("Write your guess first");
-  const today = localDay();
-  const day = ensureDay(member.coupleId, today);
+  const day = ensureOpenLesson(member.coupleId, member.id);
   if (day.kind !== "guess") throw new Error("Today is not a guess day");
   if (day.answererId === member.id) throw new Error("You are the answerer today");
   const answered = day.answers.some((a) => a.memberId === day.answererId);
@@ -273,7 +274,7 @@ export async function submitGuess(text: string) {
      ON CONFLICT(day_id, member_id) DO UPDATE SET text = excluded.text`,
   ).run(day.id, member.id, trimmed.slice(0, 2000));
 
-  await finishDay(member);
+  await finishLesson(member, day);
 }
 
 export async function sendNote(formData: FormData) {

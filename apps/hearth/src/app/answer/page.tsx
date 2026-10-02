@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ensureDay } from "@/lib/repo";
+import { ensureOpenLesson } from "@/lib/repo";
 import { getPartner, getSessionMember } from "@/lib/session";
-import { localDay } from "@/lib/today";
 import { BackIcon } from "@/components/icons";
 import { QuestLesson } from "@/components/quest-lesson";
 import { KIND_CHIP } from "@/components/today-card";
@@ -20,26 +19,24 @@ export default async function AnswerPage() {
   const member = await getSessionMember();
   if (!member) redirect("/onboarding");
   const partner = getPartner(member);
-  const today = ensureDay(member.coupleId, localDay());
+  const lesson = ensureOpenLesson(member.coupleId, member.id);
 
-  if (today.complete) redirect("/");
-
-  const myAnswer = today.answers.find((a) => a.memberId === member.id);
-  const myGuess = today.guesses.find((g) => g.memberId === member.id);
-  const iAmAnswerer = today.answererId === member.id;
-  const answererAnswered = today.answers.some(
-    (a) => a.memberId === today.answererId,
+  const myAnswer = lesson.answers.find((a) => a.memberId === member.id);
+  const myGuess = lesson.guesses.find((g) => g.memberId === member.id);
+  const iAmAnswerer = lesson.answererId === member.id;
+  const answererAnswered = lesson.answers.some(
+    (a) => a.memberId === lesson.answererId,
   );
 
   const alreadyDone =
-    today.kind === "guess"
+    lesson.kind === "guess"
       ? iAmAnswerer
         ? Boolean(myAnswer)
         : Boolean(myGuess) || !answererAnswered
       : Boolean(myAnswer);
 
   const role =
-    today.kind === "guess"
+    lesson.kind === "guess"
       ? iAmAnswerer
         ? "answerer"
         : "guesser"
@@ -55,24 +52,24 @@ export default async function AnswerPage() {
         >
           <BackIcon size={20} />
         </Link>
-        <span className="chip">{today.category}</span>
-        <span className={`chip ${KIND_CHIP[today.kind]}`}>
-          {KIND_LABELS[today.kind]}
+        <span className="chip">{lesson.category}</span>
+        <span className={`chip ${KIND_CHIP[lesson.kind]}`}>
+          {KIND_LABELS[lesson.kind]}
         </span>
       </header>
 
       {alreadyDone ? (
         <p className="card p-4 text-sm text-ink">
-          {today.kind === "guess" && !iAmAnswerer && !answererAnswered
+          {lesson.kind === "guess" && !iAmAnswerer && !answererAnswered
             ? `This one starts with ${partner?.name ?? "your person"}. They go first.`
             : "This step is sealed. Head back to the path."}
         </p>
       ) : (
         <QuestLesson
-          kind={today.kind}
-          prompt={today.prompt}
-          category={today.category}
-          options={today.options}
+          kind={lesson.kind}
+          prompt={lesson.prompt}
+          category={lesson.category}
+          options={lesson.options}
           role={role}
           personName={partner?.name ?? "your person"}
         />

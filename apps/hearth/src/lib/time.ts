@@ -5,19 +5,27 @@ export function localDay(d: Date = new Date()): string {
   return `${y}-${m}-${day}`;
 }
 
+function calendarPart(day: string): string {
+  return day.split("#")[0] ?? day;
+}
+
 export function shiftDay(day: string, delta: number): string {
-  const d = new Date(`${day}T12:00:00`);
+  const d = new Date(`${calendarPart(day)}T12:00:00`);
   d.setDate(d.getDate() + delta);
   return localDay(d);
 }
 
 export function prettyDay(day: string): string {
-  const d = new Date(`${day}T12:00:00`);
-  return d.toLocaleDateString("en-US", {
+  const d = new Date(`${calendarPart(day)}T12:00:00`);
+  const base = d.toLocaleDateString("en-US", {
     weekday: "short",
     month: "short",
     day: "numeric",
   });
+  const extra = day.split("#")[1];
+  const seq = extra ? Number(extra) : 0;
+  if (Number.isFinite(seq) && seq > 0) return `${base} · ${seq + 1}`;
+  return base;
 }
 
 export function msUntilMidnight(now: Date = new Date()): number {

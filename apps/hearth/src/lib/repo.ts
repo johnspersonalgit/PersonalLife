@@ -1,8 +1,17 @@
 import db from "./db";
+import {
+  calendarDayOf,
+  isCalendarDay,
+  lessonKey,
+  lessonSeq,
+} from "./lesson-keys";
+import { iDidMyPart } from "./lesson-progress";
 import { choosePrompt } from "./pick-prompt";
 import { isDayComplete, walkStreak, type PromptKind } from "./streak";
 import { shiftDay } from "./time";
 import { localDay } from "./today";
+
+export { iDidMyPart } from "./lesson-progress";
 
 export type AnswerView = {
   memberId: number;
@@ -216,13 +225,22 @@ function rewriteUnansweredFirstDay(coupleId: number, day: string): void {
   );
 }
 
-export function ensureDay(coupleId: number, day: string): DayView {
+export function ensureDay(
+  coupleId: number,
+  day: string,
+  preferKind?: PromptKind,
+): DayView {
   const existing = db
     .prepare("SELECT 1 FROM days WHERE couple_id = ? AND day = ?")
     .get(coupleId, day);
   if (!existing) {
     const isFirst = coupleDayCount(coupleId) === 0;
-    const picked = pickPromptId(coupleId, day, isFirst ? "question" : undefined);
+    const extra = !isCalendarDay(day);
+    const picked = pickPromptId(
+      coupleId,
+      day,
+      preferKind ?? (isFirst || extra ? "question" : undefined),
+    );
     let answererId: number | null = null;
     if (picked.kind === "guess") {
       const members = db
@@ -241,7 +259,7 @@ export function ensureDay(coupleId: number, day: string): DayView {
     db.prepare(
       "INSERT INTO days (couple_id, day, prompt_id, answerer_id) VALUES (?, ?, ?, ?)",
     ).run(coupleId, day, picked.id, answererId);
-  } else {
+  } else if (isCalendarDay(day)) {
     rewriteUnansweredFirstDay(coupleId, day);
   }
   const row = db
@@ -277,6 +295,34 @@ export function getRecentDays(coupleId: number, limit = 60): DayView[] {
   return rows.map((r) => toDayView(r, n));
 }
 
+export function getLessons(coupleId: number): DayView[] {
+  const rows = db
+    .prepare(
+      `SELECT d.id, d.day, p.category, p.text AS prompt, p.kind, p.options, d.answerer_id
+       FROM days d JOIN prompts p ON p.id = d.prompt_id
+       WHERE d.couple_id = ? ORDER BY d.day ASC`,
+    )
+    .all(coupleId) as DayRow[];
+  const n = memberCount(coupleId);
+  return rows.map((r) => toDayView(r, n));
+}
+
+export function ensureOpenLesson(
+  coupleId: number,
+  memberId: number,
+  today: string = localDay(),
+): DayView {
+  ensureDay(coupleId, today);
+  const todayLessons = getLessons(coupleId).filter(
+    (l) => calendarDayOf(l.day) === today,
+  );
+  const open = todayLessons.find((l) => !iDidMyPart(l, memberId));
+  if (open) return open;
+  const nextSeq =
+    todayLessons.reduce((max, l) => Math.max(max, lessonSeq(l.day)), 0) + 1;
+  return ensureDay(coupleId, lessonKey(today, nextSeq), "question");
+}
+
 export function getStreak(coupleId: number, today: string = localDay()): StreakView {
   const n = memberCount(coupleId);
   const rows = db
@@ -288,15 +334,18 @@ export function getStreak(coupleId: number, today: string = localDay()): StreakV
        WHERE d.couple_id = ? ORDER BY d.day DESC`,
     )
     .all(coupleId) as { day: string; kind: PromptKind; answered: number; guessed: number }[];
+  const calendarRows = rows.filter((r) => isCalendarDay(r.day));
   const byDay = new Map(
-    rows.map((r) => [
+    calendarRows.map((r) => [
       r.day,
       isDayComplete(r.kind, r.answered, r.guessed, n),
     ]),
   );
 
   const first = db
-    .prepare("SELECT MIN(day) AS first FROM days WHERE couple_id = ?")
+    .prepare(
+      "SELECT MIN(day) AS first FROM days WHERE couple_id = ? AND day NOT LIKE '%#%'",
+    )
     .get(coupleId) as { first: string | null };
 
   const walk = walkStreak(byDay, first.first, today);
@@ -350,8 +399,10 @@ export type WeekDot = {
 };
 
 export function weekStatus(coupleId: number, today: string = localDay()): WeekDot[] {
-  const days = getRecentDays(coupleId, 14);
-  const byDay = new Map(days.map((d) => [d.day, d.complete]));
+  const days = getRecentDays(coupleId, 80);
+  const byDay = new Map(
+    days.filter((d) => isCalendarDay(d.day)).map((d) => [d.day, d.complete]),
+  );
   const graceDays = new Set(getStreak(coupleId, today).graceDays);
   const dots: WeekDot[] = [];
   const labels = ["S", "M", "T", "W", "T", "F", "S"];

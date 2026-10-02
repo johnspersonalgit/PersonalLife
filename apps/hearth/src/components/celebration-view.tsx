@@ -65,7 +65,7 @@ export function CelebrationView({
       </h1>
       <p className="mt-3 max-w-xs text-sm leading-relaxed text-ink-soft">
         {streak <= 1
-          ? "The flame is lit. Both of you, one question a day."
+          ? "The flame is lit. Keep going whenever you want."
           : "The flame grows because you both showed up."}
       </p>
 

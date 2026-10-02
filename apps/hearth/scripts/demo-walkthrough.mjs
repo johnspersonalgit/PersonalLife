@@ -109,8 +109,20 @@ await step("05 celebration", async () => {
 await step("06 home revealed", async () => {
   await tap(page.getByRole("link", { name: "Continue" }));
   await page.waitForSelector("text=Ten more minutes at the table");
+  await page.waitForSelector("text=START");
   await settle();
   await shot("hearth-06-home-revealed");
+});
+
+await step("06b keep going", async () => {
+  await tap(page.getByRole("link", { name: "START" }));
+  await page.waitForSelector("text=Today's quest");
+  await settle();
+  await shot("hearth-06b-keep-going");
+  await tap(page.getByLabel("Back to today"));
+  await page.waitForSelector("text=START");
+  await settle();
+  await shot("hearth-06c-next-start");
 });
 
 await step("07 journal", async () => {
