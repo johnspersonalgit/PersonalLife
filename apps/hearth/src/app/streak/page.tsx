@@ -59,7 +59,7 @@ export default async function StreakPage() {
             />
           </svg>
           <div className="absolute">
-            <Ember mood={streak.current > 0 ? "happy" : "sleepy"} size={104} />
+            <Ember mood={streak.current > 0 ? "happy" : "sleepy"} size={132} />
           </div>
         </div>
 
