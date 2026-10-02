@@ -60,6 +60,7 @@ export function parseGeneratedQuest(
 export async function generateQuestPrompt(input: {
   categories: string[];
   recentTexts: string[];
+  followUpTo?: string;
 }): Promise<GeneratedQuest | null> {
   const key = openaiApiKey();
   if (!key) return null;
@@ -92,7 +93,9 @@ export async function generateQuestPrompt(input: {
           },
           {
             role: "user",
-            content: `Allowed categories: ${categories.join(", ")}.\nWrite one new question they can answer in a sentence.\nDo not repeat:\n${avoid || "- (none yet)"}`,
+            content: input.followUpTo
+              ? `Allowed categories: ${categories.join(", ")}.\nWrite one follow-up question to this quest, without repeating it and without guessing their answers:\n${input.followUpTo}\nDo not repeat:\n${avoid || "- (none yet)"}`
+              : `Allowed categories: ${categories.join(", ")}.\nWrite one new question they can answer in a sentence.\nDo not repeat:\n${avoid || "- (none yet)"}`,
           },
         ],
       }),

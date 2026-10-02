@@ -74,6 +74,14 @@ CREATE TABLE IF NOT EXISTS streak_meta (
   celebrated TEXT NOT NULL DEFAULT '[]'
 );
 
+CREATE TABLE IF NOT EXISTS echoes (
+  id INTEGER PRIMARY KEY,
+  day_id INTEGER NOT NULL REFERENCES days(id),
+  member_id INTEGER NOT NULL REFERENCES members(id),
+  text TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 CREATE TABLE IF NOT EXISTS push_subscriptions (
   id INTEGER PRIMARY KEY,
   member_id INTEGER NOT NULL REFERENCES members(id),

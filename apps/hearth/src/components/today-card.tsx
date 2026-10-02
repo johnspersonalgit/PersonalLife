@@ -69,7 +69,7 @@ export function TodayCard({
           <span className="font-mono font-semibold tracking-widest text-gold-deep">
             {coupleCode}
           </span>{" "}
-          when she is ready. You can still walk today&rsquo;s path now.
+          when they are ready. You can still walk today&rsquo;s path now.
         </div>
       ) : null}
       {today.kind === "rapid" ? (
@@ -104,6 +104,9 @@ export function TodayCard({
           partnerAnswer={partnerAnswer}
         />
       )}
+      <Link href={`/quest/${today.id}`} className="btn btn-secondary w-full">
+        Open this quest
+      </Link>
     </div>
   );
 }

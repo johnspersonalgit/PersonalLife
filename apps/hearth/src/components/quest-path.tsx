@@ -99,9 +99,9 @@ export function QuestPath({
   } else if (!myAnswer && partnerAnswer) {
     caption = `${person} sealed an answer. Yours unlocks it.`;
   } else if (!myAnswer && !partner) {
-    caption = "You can do today now. She joins when she is ready.";
+    caption = "You can do today now. Your person joins when they are ready.";
   } else if (waiting && !partner) {
-    caption = `Sealed. Share ${coupleCode} so she can unlock it.`;
+    caption = `Sealed. Share ${coupleCode} so they can unlock it.`;
   } else if (waiting) {
     caption = `Sealed. Waiting on ${person}.`;
   } else if (current.complete) {
@@ -119,31 +119,44 @@ export function QuestPath({
   const doneToday = todayLessons.filter((l) => iDidMyPart(l, member.id));
   const visibleDone = doneToday.slice(-8);
 
+  const rewind =
+    visibleDone.at(-1) ?? [...lessons].reverse().find((l) => l.complete);
+  const locked = Array.from({ length: 6 }, (_, i) => ({
+    id: `preview-${i}`,
+    lessonId: i === 0 && rewind ? rewind.id : null,
+    state: "locked" as const,
+    icon: (i === 0 && rewind
+      ? "chest"
+      : ICONS[(past.length + visibleDone.length + 1 + i) % ICONS.length]) as IconName,
+  }));
   const nodes: {
     id: string;
+    lessonId: number | null;
     state: NodeState;
     icon: IconName;
   }[] = [
-    ...past.map((d, i) => ({
-      id: d.day,
-      state: (d.state === "grace" ? "grace" : "done") as NodeState,
-      icon: ICONS[i % ICONS.length],
-    })),
+    ...past.map((d, i) => {
+      const lesson = lessons.find((l) => l.day === d.day);
+      return {
+        id: d.day,
+        lessonId: lesson?.id ?? null,
+        state: (d.state === "grace" ? "grace" : "done") as NodeState,
+        icon: ICONS[i % ICONS.length],
+      };
+    }),
     ...visibleDone.map((l, i) => ({
       id: l.day,
+      lessonId: l.id,
       state: "done" as const,
       icon: ICONS[(past.length + i) % ICONS.length],
     })),
     {
       id: current.day,
+      lessonId: current.id,
       state: "current" as const,
       icon: ICONS[(past.length + visibleDone.length) % ICONS.length],
     },
-    ...Array.from({ length: 6 }, (_, i) => ({
-      id: `preview-${i}`,
-      state: "locked" as const,
-      icon: ICONS[(past.length + visibleDone.length + 1 + i) % ICONS.length],
-    })),
+    ...locked,
   ];
 
   const positions: { x: number; y: number }[] = [];
@@ -224,11 +237,29 @@ export function QuestPath({
                     </div>
                   ) : null}
 
-                  <PathNode
-                    state={node.state}
-                    icon={node.icon}
-                    current={current}
-                  />
+                  {node.lessonId && node.state !== "current" ? (
+                    <Link
+                      href={`/quest/${node.lessonId}`}
+                      aria-label={
+                        node.icon === "chest"
+                          ? "Open a finished quest"
+                          : "Open this finished quest"
+                      }
+                      data-quest-node={String(node.lessonId)}
+                    >
+                      <PathNode
+                        state={node.state}
+                        icon={node.icon}
+                        current={current}
+                      />
+                    </Link>
+                  ) : (
+                    <PathNode
+                      state={node.state}
+                      icon={node.icon}
+                      current={current}
+                    />
+                  )}
 
                   {current && open ? (
                     <Link

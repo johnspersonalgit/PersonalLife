@@ -9,9 +9,13 @@ import { sendToMember } from "./push";
 import { isCalendarDay } from "./lesson-keys";
 import {
   addCelebrated,
+  addEcho,
   ensureOpenLesson,
+  followUpLesson,
+  getLessonById,
   getStreak,
   recordBest,
+  replayLesson,
   MILESTONES,
   type DayView,
 } from "./repo";
@@ -275,6 +279,34 @@ export async function submitGuess(text: string) {
   ).run(day.id, member.id, trimmed.slice(0, 2000));
 
   await finishLesson(member, day);
+}
+
+export async function sendEcho(formData: FormData) {
+  const member = await requireMember();
+  const dayId = Number(formData.get("dayId"));
+  const text = String(formData.get("text") ?? "").trim();
+  if (!Number.isInteger(dayId) || !text) return;
+  addEcho(member.coupleId, member.id, dayId, text);
+  revalidatePath(`/quest/${dayId}`);
+  revalidatePath("/journal");
+}
+
+export async function replayQuest(dayId: number) {
+  const member = await requireMember();
+  const source = getLessonById(member.coupleId, dayId);
+  if (!source) redirect("/");
+  replayLesson(member.coupleId, dayId);
+  revalidatePath("/");
+  redirect("/answer");
+}
+
+export async function followUpQuest(dayId: number) {
+  const member = await requireMember();
+  const source = getLessonById(member.coupleId, dayId);
+  if (!source) redirect("/");
+  await followUpLesson(member.coupleId, dayId);
+  revalidatePath("/");
+  redirect("/answer");
 }
 
 export async function sendNote(formData: FormData) {

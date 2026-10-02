@@ -373,6 +373,133 @@ export async function ensureOpenLesson(
   );
 }
 
+export function getLessonById(
+  coupleId: number,
+  id: number,
+): DayView | null {
+  const row = db
+    .prepare(
+      `SELECT d.id, d.day, p.category, p.text AS prompt, p.kind, p.options, d.answerer_id
+       FROM days d JOIN prompts p ON p.id = d.prompt_id
+       WHERE d.couple_id = ? AND d.id = ?`,
+    )
+    .get(coupleId, id) as DayRow | undefined;
+  return row ? toDayView(row, memberCount(coupleId)) : null;
+}
+
+export type EchoView = {
+  id: number;
+  memberId: number;
+  memberName: string;
+  avatar: string | null;
+  color: string | null;
+  text: string;
+  createdAt: string;
+};
+
+export function getEchoes(dayId: number): EchoView[] {
+  const rows = db
+    .prepare(
+      `SELECT e.id, e.member_id, m.name AS member_name, m.avatar, m.color, e.text, e.created_at
+       FROM echoes e JOIN members m ON m.id = e.member_id
+       WHERE e.day_id = ? ORDER BY e.created_at`,
+    )
+    .all(dayId) as {
+    id: number;
+    member_id: number;
+    member_name: string;
+    avatar: string | null;
+    color: string | null;
+    text: string;
+    created_at: string;
+  }[];
+  return rows.map((r) => ({
+    id: r.id,
+    memberId: r.member_id,
+    memberName: r.member_name,
+    avatar: r.avatar,
+    color: r.color,
+    text: r.text,
+    createdAt: r.created_at,
+  }));
+}
+
+export function addEcho(
+  coupleId: number,
+  memberId: number,
+  dayId: number,
+  text: string,
+): void {
+  const lesson = getLessonById(coupleId, dayId);
+  if (!lesson) return;
+  const trimmed = text.trim().slice(0, 280);
+  if (!trimmed) return;
+  db.prepare("INSERT INTO echoes (day_id, member_id, text) VALUES (?, ?, ?)").run(
+    dayId,
+    memberId,
+    trimmed,
+  );
+}
+
+function nextExtraKey(coupleId: number, today: string): string {
+  ensureDay(coupleId, today);
+  const todayLessons = getLessons(coupleId).filter(
+    (l) => calendarDayOf(l.day) === today,
+  );
+  const nextSeq =
+    todayLessons.reduce((max, l) => Math.max(max, lessonSeq(l.day)), 0) + 1;
+  return lessonKey(today, nextSeq);
+}
+
+export function replayLesson(
+  coupleId: number,
+  sourceId: number,
+  today: string = localDay(),
+): DayView | null {
+  const source = getLessonById(coupleId, sourceId);
+  if (!source) return null;
+  const prompt = db
+    .prepare("SELECT prompt_id FROM days WHERE id = ? AND couple_id = ?")
+    .get(sourceId, coupleId) as { prompt_id: number } | undefined;
+  if (!prompt) return null;
+  return ensureDay(
+    coupleId,
+    nextExtraKey(coupleId, today),
+    source.kind,
+    prompt.prompt_id,
+  );
+}
+
+export async function followUpLesson(
+  coupleId: number,
+  sourceId: number,
+  today: string = localDay(),
+): Promise<DayView | null> {
+  const source = getLessonById(coupleId, sourceId);
+  if (!source) return null;
+  const cats = coupleCategories(coupleId);
+  const recent = (
+    db
+      .prepare(
+        `SELECT p.text FROM days d JOIN prompts p ON p.id = d.prompt_id
+         WHERE d.couple_id = ? ORDER BY d.day DESC LIMIT 24`,
+      )
+      .all(coupleId) as { text: string }[]
+  ).map((r) => r.text);
+  const generated = await generateQuestPrompt({
+    categories: cats.length ? cats : [source.category],
+    recentTexts: recent,
+    followUpTo: source.prompt,
+  });
+  const promptId = generated ? insertGeneratedPrompt(generated) : null;
+  return ensureDay(
+    coupleId,
+    nextExtraKey(coupleId, today),
+    "question",
+    promptId ?? undefined,
+  );
+}
+
 export function getStreak(coupleId: number, today: string = localDay()): StreakView {
   const n = memberCount(coupleId);
   const rows = db

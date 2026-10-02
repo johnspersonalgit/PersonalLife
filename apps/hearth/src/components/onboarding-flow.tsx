@@ -244,7 +244,7 @@ export function OnboardingFlow() {
               Invite your person.
             </h1>
             <p className="mt-2 max-w-xs text-sm leading-relaxed text-ink-soft">
-              She opens Hearth, taps &ldquo;I have a code&rdquo;, and enters
+              They open Hearth, tap &ldquo;I have a code&rdquo;, and enter
               this. Then the ritual begins.
             </p>
             <button

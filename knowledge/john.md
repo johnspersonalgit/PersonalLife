@@ -33,3 +33,4 @@ Record preferences here as John states them, one dated line each. Never quote or
 - 2026-10-02: A Hearth lesson is more than one or two prompts. Several easy beats that feel like a real task and finish in a minute or two, every day.
 - 2026-10-02: Hearth path is Duo grind, not one calendar lock. After YOU finish a lesson, the next node unlocks immediately. Daily streak still counts the calendar pair-seal only.
 - 2026-10-02: Keep-going extras may be written by the OpenAI API so the trail does not recycle the same 60 prompts. Generated questions stay generic. No invented personal facts. Pool is the fallback.
+- 2026-10-02: Finished quests stay playable. Tap a done node or journal card to reread, leave a line, ask a follow-up, or do that quest again. Follow-ups send the prompt text only, never sealed answers, to the model.

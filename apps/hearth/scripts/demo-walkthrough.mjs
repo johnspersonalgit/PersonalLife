@@ -137,6 +137,17 @@ await step("07 journal", async () => {
   await shot("hearth-07-journal");
 });
 
+await step("07b reopen quest", async () => {
+  await tap(page.locator('[data-quest-link="done"]').first());
+  await page.waitForSelector("[data-quest-review]");
+  await page.waitForSelector("text=Ten more minutes at the table");
+  await page.locator("textarea").fill("That porch light still counts.");
+  await tap(page.getByRole("button", { name: "Leave it on this quest" }));
+  await page.waitForSelector("text=That porch light still counts.");
+  await settle();
+  await shot("hearth-07b-quest-review");
+});
+
 await step("08 notes", async () => {
   await tapNav("Notes");
   await page.getByLabel("Note text").fill("Dinner Friday. I already miss it.");

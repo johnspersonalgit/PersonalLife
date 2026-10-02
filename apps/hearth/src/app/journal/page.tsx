@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getRecentDays } from "@/lib/repo";
 import { getPartner, getSessionMember } from "@/lib/session";
@@ -40,6 +41,11 @@ export default async function JournalPage() {
             : undefined;
           return (
             <article key={d.id} className="card flex flex-col gap-3 p-5">
+              <Link
+                href={`/quest/${d.id}`}
+                className="contents"
+                data-quest-link={d.complete ? "done" : "open"}
+              >
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-semibold tracking-widest uppercase text-ink-soft">
                   {prettyDay(d.day)}
@@ -93,6 +99,7 @@ export default async function JournalPage() {
               ) : (
                 <p className="text-sm text-ink-soft">The flame rested this day.</p>
               )}
+              </Link>
             </article>
           );
         })
