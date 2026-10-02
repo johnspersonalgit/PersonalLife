@@ -9,6 +9,9 @@ name: testflight
 
 on:
   workflow_dispatch:
+  push:
+    tags:
+      - "tf-*"
 
 jobs:
   build-ios:
@@ -34,8 +37,10 @@ jobs:
 
       - name: Install App Store Connect API key
         run: |
-          mkdir -p "$HOME/private_keys"
-          echo "$ASC_API_KEY_P8" > "$HOME/private_keys/AuthKey_${ASC_KEY_ID}.p8"
+          mkdir -p "$HOME/private_keys" "$HOME/.private_keys" "$HOME/.appstoreconnect/private_keys"
+          printf '%s\n' "$ASC_API_KEY_P8" > "$HOME/private_keys/AuthKey_${ASC_KEY_ID}.p8"
+          cp "$HOME/private_keys/AuthKey_${ASC_KEY_ID}.p8" "$HOME/.private_keys/AuthKey_${ASC_KEY_ID}.p8"
+          cp "$HOME/private_keys/AuthKey_${ASC_KEY_ID}.p8" "$HOME/.appstoreconnect/private_keys/AuthKey_${ASC_KEY_ID}.p8"
         env:
           ASC_API_KEY_P8: ${{ secrets.ASC_API_KEY_P8 }}
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
