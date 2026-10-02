@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { updateCategories } from "@/lib/actions";
+import { updateCategories, updatePin } from "@/lib/actions";
 import { CheckIcon } from "./icons";
 
 const CATEGORIES = [
@@ -12,6 +12,74 @@ const CATEGORIES = [
   { id: "dreams", name: "Dreams" },
   { id: "play", name: "Play" },
 ];
+
+export function PinPanel() {
+  const [current, setCurrent] = useState("");
+  const [next, setNext] = useState("");
+  const [message, setMessage] = useState<string | null>(null);
+  const [ok, setOk] = useState(false);
+  const [pending, startTransition] = useTransition();
+
+  return (
+    <form
+      className="flex flex-col gap-3"
+      onSubmit={(e) => {
+        e.preventDefault();
+        setMessage(null);
+        startTransition(async () => {
+          const res = await updatePin(current, next);
+          if ("error" in res) {
+            setOk(false);
+            setMessage(res.error);
+          } else {
+            setOk(true);
+            setMessage("PIN updated.");
+            setCurrent("");
+            setNext("");
+          }
+        });
+      }}
+    >
+      <div className="flex gap-3">
+        <input
+          className="input font-mono tracking-[0.3em]"
+          type="password"
+          inputMode="numeric"
+          value={current}
+          onChange={(e) => setCurrent(e.target.value.replace(/\D/g, ""))}
+          placeholder="CURRENT"
+          maxLength={6}
+          aria-label="Current PIN"
+        />
+        <input
+          className="input font-mono tracking-[0.3em]"
+          type="password"
+          inputMode="numeric"
+          value={next}
+          onChange={(e) => setNext(e.target.value.replace(/\D/g, ""))}
+          placeholder="NEW"
+          maxLength={6}
+          aria-label="New PIN"
+        />
+      </div>
+      {message ? (
+        <p
+          role="alert"
+          className={`text-sm font-medium ${ok ? "text-sage" : "text-crit"}`}
+        >
+          {message}
+        </p>
+      ) : null}
+      <button
+        type="submit"
+        className="btn btn-secondary self-start"
+        disabled={pending || !current || !next}
+      >
+        {pending ? "Saving..." : "Change PIN"}
+      </button>
+    </form>
+  );
+}
 
 export function CategoryPanel({ initial }: { initial: string[] }) {
   const [cats, setCats] = useState<string[]>(initial);

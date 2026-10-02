@@ -15,6 +15,7 @@ import { GearIcon, HeartIcon, SealIcon } from "@/components/icons";
 import { MoodFace } from "@/components/mood-row";
 import { NudgeButton } from "@/components/nudge-button";
 import { NudgeCard } from "@/components/nudge-card";
+import { PushOptIn } from "@/components/push-opt-in";
 import { TabBar } from "@/components/tab-bar";
 import { WeekDots } from "@/components/week-dots";
 
@@ -74,6 +75,8 @@ export default async function Home() {
       {nudges.map((n) => (
         <NudgeCard key={n.id} nudgeId={n.id} fromName={n.fromName} />
       ))}
+
+      <PushOptIn vapidKey={process.env.HEARTH_VAPID_PUBLIC ?? null} />
 
       <section aria-labelledby="today-heading">
         <p className="text-sm text-ink-soft">

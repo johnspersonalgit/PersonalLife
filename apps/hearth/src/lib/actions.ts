@@ -4,6 +4,8 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import db from "./db";
+import { hashPin, isValidPin, verifyPin } from "./pin.mjs";
+import { sendToMember } from "./push";
 import {
   addCelebrated,
   ensureDay,
@@ -44,9 +46,11 @@ function makeCode(): string {
 export async function createRitual(
   name: string,
   categories: string[],
-): Promise<{ code: string }> {
+  pin: string,
+): Promise<{ code: string } | { error: string }> {
   const trimmed = name.trim().slice(0, 40);
-  if (!trimmed) throw new Error("Name is required");
+  if (!trimmed) return { error: "Name is required" };
+  if (!isValidPin(pin)) return { error: "Pick a 4 to 6 digit PIN." };
   const cats = categories.length
     ? categories
     : ["us", "heard", "load", "gratitude", "dreams", "play"];
@@ -61,8 +65,8 @@ export async function createRitual(
       .prepare("INSERT INTO couples (code, categories) VALUES (?, ?)")
       .run(code, JSON.stringify(cats));
     const member = db
-      .prepare("INSERT INTO members (couple_id, name) VALUES (?, ?)")
-      .run(couple.lastInsertRowid, trimmed);
+      .prepare("INSERT INTO members (couple_id, name, pin_hash) VALUES (?, ?, ?)")
+      .run(couple.lastInsertRowid, trimmed, hashPin(pin));
     db.prepare("INSERT INTO streak_meta (couple_id) VALUES (?)").run(
       couple.lastInsertRowid,
     );
@@ -93,9 +97,11 @@ export async function lookupRitual(code: string): Promise<RitualLookup> {
 export async function joinRitual(
   code: string,
   name: string,
+  pin: string,
 ): Promise<{ ok: true } | { error: string }> {
   const trimmed = name.trim().slice(0, 40);
   if (!trimmed) return { error: "Name is required" };
+  if (!isValidPin(pin)) return { error: "Pick a 4 to 6 digit PIN." };
   const couple = db
     .prepare("SELECT id FROM couples WHERE code = ?")
     .get(code.trim().toUpperCase()) as { id: number } | undefined;
@@ -105,8 +111,8 @@ export async function joinRitual(
     .get(couple.id) as { n: number };
   if (count.n >= 2) return { error: "This ritual already has two people." };
   const member = db
-    .prepare("INSERT INTO members (couple_id, name) VALUES (?, ?)")
-    .run(couple.id, trimmed);
+    .prepare("INSERT INTO members (couple_id, name, pin_hash) VALUES (?, ?, ?)")
+    .run(couple.id, trimmed, hashPin(pin));
   await setSession(Number(member.lastInsertRowid));
   return { ok: true };
 }
@@ -114,15 +120,36 @@ export async function joinRitual(
 export async function claimSeat(
   code: string,
   memberId: number,
+  pin: string,
 ): Promise<{ ok: true } | { error: string }> {
   const row = db
     .prepare(
-      `SELECT m.id FROM members m JOIN couples c ON c.id = m.couple_id
+      `SELECT m.id, m.pin_hash FROM members m JOIN couples c ON c.id = m.couple_id
        WHERE m.id = ? AND c.code = ?`,
     )
-    .get(memberId, code.trim().toUpperCase()) as { id: number } | undefined;
+    .get(memberId, code.trim().toUpperCase()) as
+    | { id: number; pin_hash: string | null }
+    | undefined;
   if (!row) return { error: "That seat does not match this code." };
+  if (!verifyPin(pin, row.pin_hash)) return { error: "Wrong PIN for that seat." };
   await setSession(row.id);
+  return { ok: true };
+}
+
+export async function updatePin(
+  current: string,
+  next: string,
+): Promise<{ ok: true } | { error: string }> {
+  const member = await requireMember();
+  const row = db
+    .prepare("SELECT pin_hash FROM members WHERE id = ?")
+    .get(member.id) as { pin_hash: string | null };
+  if (!verifyPin(current, row.pin_hash)) return { error: "Current PIN is wrong." };
+  if (!isValidPin(next)) return { error: "Pick a 4 to 6 digit PIN." };
+  db.prepare("UPDATE members SET pin_hash = ? WHERE id = ?").run(
+    hashPin(next),
+    member.id,
+  );
   return { ok: true };
 }
 
@@ -179,6 +206,14 @@ export async function sendNudge() {
     member.coupleId,
     member.id,
   );
+  const partner = getPartner(member);
+  if (partner) {
+    await sendToMember(partner.id, {
+      title: "Hearth",
+      body: `${member.name} sent a thinking-of-you.`,
+      url: "/",
+    });
+  }
   revalidatePath("/");
 }
 

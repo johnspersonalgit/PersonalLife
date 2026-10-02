@@ -6,13 +6,36 @@ Two people. One small ritual. A private, Duolingo-mechanics daily check-in for J
 
 ```bash
 npm install
-node scripts/seed-demo.mjs   # optional demo couple (code HEARTH, members John + Partner)
+node scripts/seed-demo.mjs   # optional demo couple (code HEARTH; PINs: John 1111, Partner 2222)
 npm run dev
 ```
 
-Open http://localhost:3000. Onboarding creates a real couple and a six-letter invite code; the second phone joins with "I have a code". Settings has "Switch to ... (same device)" for single-device use.
+Open http://localhost:3000. Onboarding creates a real couple and a six-letter invite code; each person sets a 4 to 6 digit PIN, and the PIN is what reconnects a seat on a new device. Settings has "Switch to ... (same device)" for single-device use.
 
 Data lives in `.data/hearth.db` (SQLite, gitignored). Override with `HEARTH_DB`.
+
+## Notifications
+
+Web push is wired end to end: a service worker (`public/sw.js`), subscription storage, a nudge push to the partner, and a nightly reminder for whoever has not answered by their reminder time.
+
+- Env (see `.env.local`, regenerate for production with `npx web-push generate-vapid-keys`): `HEARTH_VAPID_PUBLIC`, `HEARTH_VAPID_PRIVATE`, `HEARTH_VAPID_CONTACT`, `HEARTH_CRON_SECRET`.
+- Schedule `POST /api/notify` with header `Authorization: Bearer $HEARTH_CRON_SECRET` every 15 minutes (any cron: Render Cron, GitHub Actions schedule, or a system crontab).
+- iPhone receives web push only when the app is installed to the Home Screen (iOS 16.4+). Enable from the card on the Today tab.
+
+## Path to our phones (recommended)
+
+1. Host the Docker image anywhere with a persistent disk mounted at `/app/.data` (Render Starter + 1 GB disk, Fly.io volume, or a home server). `docker build -t hearth . && docker run -p 3000:3000 -v hearth-data:/app/.data --env-file .env.local hearth`
+2. Open the URL on both phones, join with the code, set PINs.
+3. Add to Home Screen. Enable the evening nudge. Done. No Apple review, no store, works today.
+
+## Path to the App Store (only if you still want the badge)
+
+Two gates are human and cannot be automated:
+
+1. Apple Developer enrollment ($99/yr, your identity, your phone).
+2. A public URL from the hosting step above.
+
+Then the mechanical part: wrap the hosted URL with Capacitor (`npm i @capacitor/core @capacitor/ios && npx cap init` pointing `server.url` at the hosted app), build the IPA in Xcode or a cloud Mac builder, and distribute via TestFlight. App Store review for a two-person app is ceremony with no distribution benefit; TestFlight is the realistic lane. Note the Dockerfile here was verified as a production `next build` + standalone output, but the image itself was not built locally (no Docker daemon on the dev machine).
 
 ## Design receipt
 
@@ -35,7 +58,7 @@ Palette and type are original to this repo: warm paper `#fbf8f3`, ink `#22201c`,
 
 ## Honest boundaries (v1)
 
-- No passwords. The invite code is the only gate: it creates the second seat and reconnects either person on a new device. Profile identity is a device cookie. Before real phones, add passcodes or magic links.
-- Reminders are stored preferences only; no push or SMS is wired yet.
-- Streak days use the server's local timezone.
+- Auth is a 4 to 6 digit PIN per person (scrypt-hashed), plus the invite code. That is right for two trusted people; it is not protection against a motivated attacker with the code.
+- Reminder times compare against the server's timezone. Set `TZ` on the host to the household timezone.
+- Push was verified at the API and selection-logic level (unit tests plus live endpoint checks). The on-device notification tap-through still needs one real-phone check after hosting.
 - Demo seed content is synthetic. No real exchanges are committed.

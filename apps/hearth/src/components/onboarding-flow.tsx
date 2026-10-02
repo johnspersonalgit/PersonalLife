@@ -19,7 +19,7 @@ const CATEGORIES = [
   { id: "play", name: "Play", blurb: "Light questions for heavy weeks." },
 ];
 
-type Step = "welcome" | "name" | "categories" | "code" | "join";
+type Step = "welcome" | "name" | "categories" | "pin" | "code" | "join";
 
 export function OnboardingFlow() {
   const router = useRouter();
@@ -32,19 +32,27 @@ export function OnboardingFlow() {
   const [joinCode, setJoinCode] = useState("");
   const [joinPhase, setJoinPhase] = useState<"code" | "name" | "seat">("code");
   const [seats, setSeats] = useState<{ id: number; name: string }[]>([]);
+  const [seatId, setSeatId] = useState<number | null>(null);
+  const [pin, setPin] = useState("");
+  const [pinConfirm, setPinConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [pending, startTransition] = useTransition();
 
-  const stepIndex = { welcome: 0, name: 1, categories: 2, code: 3, join: 1 }[
-    step
-  ];
+  const stepIndex = {
+    welcome: 0,
+    name: 1,
+    categories: 2,
+    pin: 3,
+    code: 4,
+    join: 1,
+  }[step];
 
   return (
     <main className="flex min-h-dvh flex-col px-6 py-8">
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col">
         <div className="flex items-center justify-center gap-1.5" aria-hidden="true">
-          {[0, 1, 2, 3].map((i) => (
+          {[0, 1, 2, 3, 4].map((i) => (
             <span
               key={i}
               className={`h-1.5 rounded-full transition-all ${
@@ -153,14 +161,70 @@ export function OnboardingFlow() {
             </div>
             <button
               className="btn btn-primary mt-6"
-              disabled={!categories.length || pending}
-              onClick={() =>
+              disabled={!categories.length}
+              onClick={() => setStep("pin")}
+            >
+              Continue
+            </button>
+          </div>
+        )}
+
+        {step === "pin" && (
+          <div className="flex flex-1 flex-col justify-center">
+            <h1 className="font-display text-3xl text-ink">Lock it to you.</h1>
+            <p className="mt-2 max-w-xs text-sm leading-relaxed text-ink-soft">
+              A 4 to 6 digit PIN keeps your answers yours, even on a shared
+              device.
+            </p>
+            <input
+              className="input mt-6 font-mono text-2xl tracking-[0.3em]"
+              type="password"
+              inputMode="numeric"
+              value={pin}
+              onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
+              placeholder="PIN"
+              maxLength={6}
+              autoFocus
+              aria-label="PIN"
+            />
+            <input
+              className="input mt-3 font-mono text-2xl tracking-[0.3em]"
+              type="password"
+              inputMode="numeric"
+              value={pinConfirm}
+              onChange={(e) => setPinConfirm(e.target.value.replace(/\D/g, ""))}
+              placeholder="AGAIN"
+              maxLength={6}
+              aria-label="Confirm PIN"
+            />
+            {error ? (
+              <p role="alert" className="mt-3 text-sm font-medium text-crit">
+                {error}
+              </p>
+            ) : null}
+            <button
+              className="btn btn-primary mt-6"
+              disabled={pending}
+              onClick={() => {
+                if (!/^\d{4,6}$/.test(pin)) {
+                  setError("Pick a 4 to 6 digit PIN.");
+                  return;
+                }
+                if (pin !== pinConfirm) {
+                  setError("The two PINs do not match.");
+                  return;
+                }
+                setError(null);
                 startTransition(async () => {
-                  const res = await createRitual(name, categories);
-                  setCode(res.code);
-                  setStep("code");
-                })
-              }
+                  const res = await createRitual(name, categories, pin);
+                  if ("error" in res) {
+                    setError(res.error);
+                  } else {
+                    setCode(res.code);
+                    setStep("code");
+                  }
+                });
+              }}
             >
               {pending ? "Lighting..." : "Light the flame"}
             </button>
@@ -256,7 +320,7 @@ export function OnboardingFlow() {
             {joinPhase === "name" && (
               <>
                 <p className="mt-2 text-sm text-ink-soft">
-                  One seat left. Claim it with your name.
+                  One seat left. Claim it with your name and a PIN.
                 </p>
                 <input
                   className="input mt-6"
@@ -265,6 +329,16 @@ export function OnboardingFlow() {
                   placeholder="Your name"
                   maxLength={40}
                   autoFocus
+                />
+                <input
+                  className="input mt-3 font-mono text-2xl tracking-[0.3em]"
+                  type="password"
+                  inputMode="numeric"
+                  value={pin}
+                  onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
+                  placeholder="PIN"
+                  maxLength={6}
+                  aria-label="PIN"
                 />
                 {error ? (
                   <p role="alert" className="mt-3 text-sm font-medium text-crit">
@@ -276,7 +350,7 @@ export function OnboardingFlow() {
                   disabled={!name.trim() || pending}
                   onClick={() =>
                     startTransition(async () => {
-                      const res = await joinRitual(joinCode, name);
+                      const res = await joinRitual(joinCode, name, pin);
                       if ("error" in res) {
                         setError(res.error);
                       } else {
@@ -302,17 +376,13 @@ export function OnboardingFlow() {
                       key={s.id}
                       type="button"
                       disabled={pending}
-                      onClick={() =>
-                        startTransition(async () => {
-                          const res = await claimSeat(joinCode, s.id);
-                          if ("error" in res) {
-                            setError(res.error);
-                          } else {
-                            router.push("/");
-                          }
-                        })
-                      }
-                      className="card flex items-center justify-between px-4 py-4 text-left transition-colors hover:border-gold"
+                      onClick={() => {
+                        setSeatId(s.id);
+                        setError(null);
+                      }}
+                      className={`card flex items-center justify-between px-4 py-4 text-left transition-colors hover:border-gold ${
+                        seatId === s.id ? "border-gold bg-gold-soft/20" : ""
+                      }`}
                     >
                       <span className="text-sm font-semibold text-ink">
                         {s.name}
@@ -323,10 +393,41 @@ export function OnboardingFlow() {
                     </button>
                   ))}
                 </div>
+                {seatId !== null ? (
+                  <input
+                    className="input mt-4 font-mono text-2xl tracking-[0.3em]"
+                    type="password"
+                    inputMode="numeric"
+                    value={pin}
+                    onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
+                    placeholder="PIN"
+                    maxLength={6}
+                    aria-label="Your PIN"
+                    autoFocus
+                  />
+                ) : null}
                 {error ? (
                   <p role="alert" className="mt-3 text-sm font-medium text-crit">
                     {error}
                   </p>
+                ) : null}
+                {seatId !== null ? (
+                  <button
+                    className="btn btn-primary mt-4"
+                    disabled={pending}
+                    onClick={() =>
+                      startTransition(async () => {
+                        const res = await claimSeat(joinCode, seatId, pin);
+                        if ("error" in res) {
+                          setError(res.error);
+                        } else {
+                          router.push("/");
+                        }
+                      })
+                    }
+                  >
+                    {pending ? "Checking..." : "Reconnect"}
+                  </button>
                 ) : null}
               </>
             )}

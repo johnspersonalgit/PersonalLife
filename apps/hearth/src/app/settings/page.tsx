@@ -4,7 +4,7 @@ import db from "@/lib/db";
 import { signOut, switchProfile, updateProfile } from "@/lib/actions";
 import { getPartner, getSessionMember } from "@/lib/session";
 import { BackIcon } from "@/components/icons";
-import { CategoryPanel } from "@/components/settings-panels";
+import { CategoryPanel, PinPanel } from "@/components/settings-panels";
 
 export const dynamic = "force-dynamic";
 
@@ -83,6 +83,16 @@ export default async function SettingsPage() {
             {couple.code}
           </span>
         </div>
+      </section>
+
+      <section className="card flex flex-col gap-3 p-5" aria-labelledby="pin-heading">
+        <h2
+          id="pin-heading"
+          className="text-[10px] font-semibold tracking-widest uppercase text-ink-soft"
+        >
+          Your PIN
+        </h2>
+        <PinPanel />
       </section>
 
       <section className="card flex flex-col gap-3 p-5" aria-labelledby="ritual-heading">

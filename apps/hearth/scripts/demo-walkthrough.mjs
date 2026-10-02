@@ -46,8 +46,16 @@ await step("02 seat picker", async () => {
   await shot("hearth-02-seat-picker");
 });
 
-await step("03 home as John", async () => {
+await step("02b wrong PIN rejected", async () => {
   await page.getByRole("button", { name: /John/ }).click();
+  await page.getByLabel("Your PIN").fill("9999");
+  await page.getByRole("button", { name: "Reconnect" }).click();
+  await page.waitForSelector("text=Wrong PIN for that seat.");
+});
+
+await step("03 home as John", async () => {
+  await page.getByLabel("Your PIN").fill("1111");
+  await page.getByRole("button", { name: "Reconnect" }).click();
   await page.waitForSelector("text=sealed an answer");
   await settle();
   await shot("hearth-03-home-john");

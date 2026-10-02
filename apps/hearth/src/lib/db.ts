@@ -18,6 +18,13 @@ const schema = fs.readFileSync(
 );
 db.exec(schema);
 
+const memberCols = db.prepare("PRAGMA table_info(members)").all() as {
+  name: string;
+}[];
+if (!memberCols.some((c) => c.name === "pin_hash")) {
+  db.exec("ALTER TABLE members ADD COLUMN pin_hash TEXT");
+}
+
 const promptCount = db
   .prepare("SELECT COUNT(*) AS n FROM prompts")
   .get() as { n: number };

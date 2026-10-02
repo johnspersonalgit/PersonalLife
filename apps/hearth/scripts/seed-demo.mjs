@@ -1,6 +1,7 @@
 import Database from "better-sqlite3";
 import fs from "node:fs";
 import path from "node:path";
+import { hashPin } from "../src/lib/pin.mjs";
 
 const root = path.resolve(import.meta.dirname, "..");
 const dbPath = process.env.HEARTH_DB ?? path.join(root, ".data", "hearth.db");
@@ -51,13 +52,17 @@ const seed = db.transaction(() => {
   );
   const john = Number(
     db
-      .prepare("INSERT INTO members (couple_id, name) VALUES (?, ?)")
-      .run(coupleId, "John").lastInsertRowid,
+      .prepare(
+        "INSERT INTO members (couple_id, name, pin_hash) VALUES (?, ?, ?)",
+      )
+      .run(coupleId, "John", hashPin("1111")).lastInsertRowid,
   );
   const partner = Number(
     db
-      .prepare("INSERT INTO members (couple_id, name) VALUES (?, ?)")
-      .run(coupleId, "Partner").lastInsertRowid,
+      .prepare(
+        "INSERT INTO members (couple_id, name, pin_hash) VALUES (?, ?, ?)",
+      )
+      .run(coupleId, "Partner", hashPin("2222")).lastInsertRowid,
   );
   db.prepare(
     "INSERT INTO streak_meta (couple_id, best, celebrated) VALUES (?, ?, ?)",
