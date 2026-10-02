@@ -10,7 +10,7 @@ John's personal app studio. Apps that make life outside work easier and better.
 
 | App | What it is |
 | --- | --- |
-| [`apps/hearth`](apps/hearth) | Two people. One small ritual. A private daily check-in for John and his wife: one sealed question a day, a shared streak with grace days, notes, nudges, and evening reminders. |
+| [`apps/hearth`](apps/hearth) | Two people. One small ritual. A private daily check-in for John and Ariana: one sealed question a day, a shared streak with grace days, notes, nudges, and evening reminders. Live at https://hearth-gc8u.onrender.com/install. |
 
 ## Working here
 

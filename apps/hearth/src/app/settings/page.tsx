@@ -141,6 +141,25 @@ export default async function SettingsPage() {
         <CategoryPanel initial={categories} />
       </section>
 
+      <section className="card flex flex-col gap-3 p-5" aria-labelledby="phones-heading">
+        <h2
+          id="phones-heading"
+          className="text-[10px] font-semibold tracking-widest uppercase text-ink-soft"
+        >
+          Both phones
+        </h2>
+        <p className="text-sm leading-relaxed text-ink">
+          Safari, Share, Add to Home Screen. Ember becomes the icon. Do this on
+          both phones.
+        </p>
+        <Link href="/install" className="btn btn-primary w-full">
+          Put Hearth on this phone
+        </Link>
+        <Link href="/privacy" className="btn btn-secondary w-full">
+          Privacy
+        </Link>
+      </section>
+
       <section className="card flex flex-col gap-3 p-5" aria-labelledby="device-heading">
         <h2
           id="device-heading"

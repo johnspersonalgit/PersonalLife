@@ -10,6 +10,7 @@ import {
 } from "@/lib/actions";
 import { Avatar } from "./avatar";
 import { Ember } from "./ember";
+import { HomeScreenHint } from "./home-screen-hint";
 import { CheckIcon, CopyIcon } from "./icons";
 
 const CATEGORIES = [
@@ -89,6 +90,7 @@ export function OnboardingFlow() {
             >
               I have a code
             </button>
+            <HomeScreenHint />
           </div>
         )}
 

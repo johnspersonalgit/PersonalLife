@@ -26,30 +26,27 @@ Web push is wired end to end: a service worker (`public/sw.js`), subscription st
 - Schedule `POST /api/notify` with header `Authorization: Bearer $HEARTH_CRON_SECRET` every 15 minutes (any cron: Render Cron, GitHub Actions schedule, or a system crontab).
 - iPhone receives web push only when the app is installed to the Home Screen (iOS 16.4+). Enable from the card on the Today tab.
 
-## Path to our phones (recommended)
+## Path to our phones (tonight)
 
-Live at **https://hearth-gc8u.onrender.com** (Render, Docker, starter, Virginia, 1 GB disk at `/app/.data`, `TZ=America/New_York`). Reminders run via the `hearth-notify` Render cron every 15 minutes against `/api/notify`. Auto-deploys on every push to `main`.
+Live at **https://hearth-gc8u.onrender.com**. Install page: **https://hearth-gc8u.onrender.com/install**. Render Docker, starter, Virginia, 1 GB disk at `/app/.data`, `TZ=America/New_York`. Reminders run via the `hearth-notify` cron every 15 minutes. Auto-deploys on every push to `main`.
 
-1. Open the URL on both phones.
-2. One of you: Get started, name, topics, PIN, share the six-letter code.
-3. The other: I have a code, enter it, name, PIN.
-4. Add to Home Screen on both phones. Enable the evening nudge when the card appears.
+John and Ariana, on both iPhones:
+
+1. Open https://hearth-gc8u.onrender.com/install in **Safari**, not Chrome.
+2. Tap Share, then **Add to Home Screen**. Keep the name Hearth. Ember is the icon.
+3. One of you: Get started, name, topics, PIN, share the six-letter code.
+4. The other: I have a code, enter it, name, PIN.
+5. Enable the evening nudge when the card appears. iPhone web push needs the Home Screen install (iOS 16.4+).
 
 Self-host alternative: `docker build -t hearth . && docker run -p 3000:3000 -v hearth-data:/app/.data --env-file .env.local hearth`
 
-## Path to the App Store
+## Path to TestFlight / the App Store
 
-Status: Apple Developer account active (gate cleared 2026-10-02). The repo now contains the complete Capacitor scaffold: `capacitor.config.ts`, generated `ios/` (Xcode project, SPM layout) and `android/` projects, the push-notifications plugin, and `native-shell/` as the offline fallback page. `npx cap sync` is verified; `npx cap doctor` reports Android green and iOS ready pending Xcode.
+Hosted URL, Capacitor shell (`com.willette.hearth`), Ember icons, privacy page, `PrivacyInfo.xcprivacy`, and the `testflight` GitHub Action are in the repo. Packet: `store/ios/APP_STORE.md`.
 
-Remaining lane, in order:
+Leftover bind (do not paste the key in chat): on `johnspersonalgit/PersonalLife` add GitHub secrets `ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_API_KEY_P8` from an App Store Connect API key, plus repo variable `HEARTH_PUBLIC_URL=https://hearth-gc8u.onrender.com`. Then run the `testflight` workflow. Invite John and Ariana. Internal TestFlight if Ariana is on the Apple team; otherwise external beta review. Public App Store review is extra ceremony after that.
 
-1. Host the app (Docker section above) so it has a public URL.
-2. Set `HEARTH_PUBLIC_URL` to that URL and run `npx cap sync`.
-3. Build the IPA on a Mac lane: any Mac with Xcode (`npx cap open ios`, archive, upload), or a cloud Mac builder (Codemagic, GitHub Actions macos runner) with your signing assets. Bundle ID is `com.willette.hearth`; match it in App Store Connect.
-4. Native push inside the shell needs the APNs path: create an APNs key in the Apple Developer portal, then wire `@capacitor/push-notifications` registration to a token endpoint. Web push does not run inside the native WKWebView shell; the PWA path already delivers notifications without any of this.
-5. Distribute via TestFlight. Public App Store review for a two-person app is ceremony with no distribution benefit.
-
-Note: the Dockerfile was verified as a production `next build` plus standalone output assembled exactly as the Dockerfile assembles it, but the image itself was not built locally (no Docker daemon on the dev machine).
+Linux cannot build the IPA. The workflow uses `macos-latest`. Native push inside the WKWebView shell still needs an APNs key; Home Screen web push already works without it.
 
 ## Design receipt
 
@@ -81,9 +78,9 @@ The daily ritual rotates four kinds, all sealed until both partners do their par
 
 ## Ember
 
-The mascot is the streak flame, alive. Original SVG (`src/components/ember.tsx`), brand palette only, four moods (happy, sleepy, worried, celebrate) tied to ritual state, animations disabled under reduced motion. Deliberately not an owl.
+The mascot is the full-body clay flame John picked (`public/ember.png`). Four moods (happy, sleepy, worried, celebrate) tied to ritual state, animations disabled under reduced motion. Home Screen and App Store icons are Ember on flame orange.
 
-Palette and type are original to this repo: warm paper `#fbf8f3`, ink `#22201c`, gold `#c69a6a`, flame `#d9763a`; Fraunces display, Work Sans UI. Duolingo's cartoon green and mascot were deliberately not carried over.
+Palette: paper `#fff4e6`, ink `#1f2a55`, flame `#f08a3a`, blue `#3d7de0`, rose `#e056a0`. Type: Bricolage Grotesque, DM Sans, Instrument Serif. Thick ink outlines, cartoon playground blobs. Not quiet-luxury gold/cream.
 
 ## Honest boundaries (v1)
 
