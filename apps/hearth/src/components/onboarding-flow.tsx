@@ -12,11 +12,11 @@ import { CheckIcon, CopyIcon } from "./icons";
 
 const CATEGORIES = [
   { id: "us", name: "Us", blurb: "Closeness, appreciation, the two of you." },
+  { id: "heard", name: "Heard", blurb: "What landed, what did not, small repairs." },
+  { id: "load", name: "Load", blurb: "Who is carrying what, and noticing." },
   { id: "gratitude", name: "Gratitude", blurb: "Small ordinary things worth saying." },
   { id: "dreams", name: "Dreams", blurb: "Trips, traditions, the someday list." },
   { id: "play", name: "Play", blurb: "Light questions for heavy weeks." },
-  { id: "home", name: "Home", blurb: "Logistics, gently. Plates and calendars." },
-  { id: "checkin", name: "Check-in", blurb: "Energy, weight, and honest arrivals." },
 ];
 
 type Step = "welcome" | "name" | "categories" | "code" | "join";

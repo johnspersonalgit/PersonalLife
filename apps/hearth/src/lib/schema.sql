@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS couples (
   id INTEGER PRIMARY KEY,
   code TEXT UNIQUE NOT NULL,
-  categories TEXT NOT NULL DEFAULT '["us","gratitude","dreams","play","home","checkin"]',
+  categories TEXT NOT NULL DEFAULT '["us","heard","load","gratitude","dreams","play"]',
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 

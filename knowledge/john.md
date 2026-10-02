@@ -23,4 +23,6 @@ Seeded 2026-10-01 from verified working preferences. Agents: append generalizabl
 
 ## Personal life
 
-Empty by design. Record preferences here as John states them, one dated line each.
+Record preferences here as John states them, one dated line each. Never quote or store private exchanges.
+
+- 2026-10-02: Hearth is load-bearing, not a toy. Design lessons John confirmed from real use: he reads best in short, structured bursts on a fixed routine; initiative and action beat acknowledgment; expressing feelings must never feel like administrative work; the app carries the initiative, not either person.

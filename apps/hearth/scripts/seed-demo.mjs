@@ -41,10 +41,8 @@ function shiftDay(day, delta) {
   return localDay(d);
 }
 
-const promptIds = db
-  .prepare("SELECT id FROM prompts ORDER BY id")
-  .all()
-  .map((r) => r.id);
+const promptId = (text) =>
+  db.prepare("SELECT id FROM prompts WHERE text = ?").get(text).id;
 
 const seed = db.transaction(() => {
   const coupleId = Number(
@@ -65,47 +63,60 @@ const seed = db.transaction(() => {
     "INSERT INTO streak_meta (couple_id, best, celebrated) VALUES (?, ?, ?)",
   ).run(coupleId, 5, JSON.stringify([3]));
 
-  const johnAnswers = [
-    [4, "Honestly the best part was dinner Tuesday. Even twenty minutes at the table beats a week of texts."],
-    [3, "Long day. The call ran over and I missed sunset. Grateful you handled pickup without being asked."],
-    [4, "I keep thinking about that porch idea. Let's actually price it out this weekend."],
-    [5, "Woke up before the alarm and just felt good. Coffee on the deck, you still asleep, quiet house."],
-    [3, "Back to back meetings. I did snag us a reservation for Friday though. No logistics, just us."],
-  ];
-  const partnerAnswers = [
-    [4, "Watching you read to the kids last night. The house felt completely settled for once."],
-    [3, "Tired but okay. The garden finally got weeded, which felt like winning a small war."],
-    [5, "Yes to the porch. I found three photos of exactly what I mean. Remind me to show you."],
-    [4, "A slow morning for once. I sat with coffee and did absolutely nothing productive."],
-    [4, "Friday sounds perfect. I already know what I'm wearing."],
+  const history = [
+    {
+      offset: -6,
+      prompt: "What moment with me this week would you relive if you could?",
+      john: [4, "Honestly, dinner Tuesday. Twenty minutes at the table beats a week of texts."],
+      partner: [4, "Watching you read to the kids last night. The house felt completely settled for once."],
+    },
+    {
+      offset: -5,
+      prompt: "What is one thing you carried this week that I did not see?",
+      john: [3, "The loan renewal call. Forty minutes on hold. I did not want to bring it home."],
+      partner: [3, "The appointment forms, the shoe sizes, the birthday gift for Saturday. Small stuff that is never actually small."],
+    },
+    {
+      offset: -4,
+      prompt: "If we had one completely free weekend next month, how would you want to spend it?",
+      john: [4, "That. Plus finally pricing the porch project so it stops being a someday."],
+      partner: [5, "Porch coffee, no plans before noon, and one dinner we did not cook."],
+    },
+    {
+      offset: -2,
+      prompt: "Name one ordinary thing today that you are quietly grateful for.",
+      john: [5, "Coffee on the deck before anyone woke up. Quiet house."],
+      partner: [4, "A slow morning. I sat with my coffee and did absolutely nothing productive."],
+    },
+    {
+      offset: -1,
+      prompt: "What would make this weekend feel restful instead of packed?",
+      john: [4, "Back to back meetings all week, but I snagged us a reservation for Friday. No logistics, just us."],
+      partner: [4, "Friday dinner out, already booked by you. That is the whole wish."],
+    },
   ];
 
   const today = localDay();
-  const gapDay = shiftDay(today, -3);
-  let cursor = 0;
-  for (let i = 6; i >= 1; i--) {
-    const day = shiftDay(today, -i);
-    if (day === gapDay) continue;
-    const promptId = promptIds[(i * 5) % promptIds.length];
+  for (const h of history) {
+    const day = shiftDay(today, h.offset);
     const dayId = Number(
       db
         .prepare("INSERT INTO days (couple_id, day, prompt_id) VALUES (?, ?, ?)")
-        .run(coupleId, day, promptId).lastInsertRowid,
+        .run(coupleId, day, promptId(h.prompt)).lastInsertRowid,
     );
-    const stamp = `${day} 21:1${i}:00`;
+    const stamp = `${day} 21:10:00`;
     db.prepare(
       "INSERT INTO answers (day_id, member_id, mood, text, created_at) VALUES (?, ?, ?, ?, ?)",
-    ).run(dayId, john, johnAnswers[cursor][0], johnAnswers[cursor][1], stamp);
+    ).run(dayId, john, h.john[0], h.john[1], stamp);
     db.prepare(
       "INSERT INTO answers (day_id, member_id, mood, text, created_at) VALUES (?, ?, ?, ?, ?)",
-    ).run(dayId, partner, partnerAnswers[cursor][0], partnerAnswers[cursor][1], stamp);
-    cursor += 1;
+    ).run(dayId, partner, h.partner[0], h.partner[1], stamp);
   }
 
   const todayId = Number(
     db
       .prepare("INSERT INTO days (couple_id, day, prompt_id) VALUES (?, ?, ?)")
-      .run(coupleId, today, promptIds[2]).lastInsertRowid,
+      .run(coupleId, today, promptId("What do you wish we had ten more minutes for?")).lastInsertRowid,
   );
   db.prepare(
     "INSERT INTO answers (day_id, member_id, mood, text, created_at) VALUES (?, ?, ?, ?, ?)",

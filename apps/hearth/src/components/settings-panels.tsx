@@ -6,11 +6,11 @@ import { CheckIcon } from "./icons";
 
 const CATEGORIES = [
   { id: "us", name: "Us" },
+  { id: "heard", name: "Heard" },
+  { id: "load", name: "Load" },
   { id: "gratitude", name: "Gratitude" },
   { id: "dreams", name: "Dreams" },
   { id: "play", name: "Play" },
-  { id: "home", name: "Home" },
-  { id: "checkin", name: "Check-in" },
 ];
 
 export function CategoryPanel({ initial }: { initial: string[] }) {

@@ -49,7 +49,7 @@ export async function createRitual(
   if (!trimmed) throw new Error("Name is required");
   const cats = categories.length
     ? categories
-    : ["us", "gratitude", "dreams", "play", "home", "checkin"];
+    : ["us", "heard", "load", "gratitude", "dreams", "play"];
 
   let code = makeCode();
   while (db.prepare("SELECT 1 FROM couples WHERE code = ?").get(code)) {
@@ -210,7 +210,7 @@ export async function updateProfile(formData: FormData) {
 
 export async function updateCategories(categories: string[]) {
   const member = await requireMember();
-  const allowed = ["us", "gratitude", "dreams", "play", "home", "checkin"];
+  const allowed = ["us", "heard", "load", "gratitude", "dreams", "play"];
   const cats = categories.filter((c) => allowed.includes(c));
   if (!cats.length) return;
   db.prepare("UPDATE couples SET categories = ? WHERE id = ?").run(
