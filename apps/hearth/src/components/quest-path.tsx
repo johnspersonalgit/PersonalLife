@@ -52,13 +52,7 @@ export function QuestPath({
         id: "seal",
         label: "Seal",
         hint: partner ? "Wait together" : "Share the code",
-        state: today.complete
-          ? "done"
-          : waiting
-            ? "current"
-            : myAnswer
-              ? "done"
-              : "locked",
+        state: today.complete ? "done" : waiting ? "current" : "locked",
       },
       {
         id: "together",
@@ -82,21 +76,21 @@ export function QuestPath({
   }
 
   return (
-    <section className="flex flex-col items-center" aria-label="Today's path">
-      <p id="today-heading" className="mb-2 font-display text-lg text-ink">
+    <section className="flex flex-col" aria-label="Today's path">
+      <p id="today-heading" className="font-display text-lg leading-snug text-ink">
         {caption}
       </p>
-      <div className="relative mx-auto w-full max-w-xs py-4">
+      <div className="relative mx-auto mt-3 w-full max-w-xs">
         <div
-          className="absolute top-16 bottom-16 left-1/2 w-1.5 -translate-x-1/2 rounded-full bg-ink"
+          className="absolute top-8 bottom-8 left-1/2 w-1.5 -translate-x-1/2 rounded-full bg-ink"
           aria-hidden="true"
         />
-        <ol className="relative flex flex-col gap-10">
+        <ol className="relative flex flex-col gap-5">
           {nodes.map((node, i) => (
             <li
               key={node.id}
               className={`flex items-center ${
-                i % 2 === 0 ? "justify-end pr-2" : "justify-start pl-2"
+                i % 2 === 0 ? "justify-end pr-1" : "justify-start pl-1"
               }`}
             >
               <PathNode
@@ -104,7 +98,6 @@ export function QuestPath({
                 hint={node.hint}
                 state={node.state}
                 current={node.state === "current"}
-                start={open && node.id === "today" && node.state === "current"}
               />
             </li>
           ))}
@@ -112,15 +105,15 @@ export function QuestPath({
       </div>
 
       {open ? (
-        <Link href="/answer" className="btn btn-primary mt-2 w-full max-w-xs">
+        <Link href="/answer" className="btn btn-primary mt-5 w-full">
           START
         </Link>
       ) : waiting && partner ? (
-        <div className="mt-2 w-full max-w-xs">
+        <div className="mt-5">
           <NudgeButton partnerName={partner.name} />
         </div>
       ) : waiting && !partner ? (
-        <p className="card mt-2 w-full max-w-xs px-4 py-3 text-center font-mono text-lg tracking-[0.25em] text-ink">
+        <p className="card mt-5 px-4 py-3 text-center font-mono text-lg tracking-[0.25em] text-ink">
           {coupleCode}
         </p>
       ) : null}
@@ -133,13 +126,11 @@ function PathNode({
   hint,
   state,
   current,
-  start,
 }: {
   label: string;
   hint: string;
   state: NodeState;
   current: boolean;
-  start: boolean;
 }) {
   const fill =
     state === "done"
@@ -149,28 +140,28 @@ function PathNode({
         : "bg-cream text-ink-soft";
 
   return (
-    <div className="relative flex w-36 flex-col items-center">
+    <div className="relative flex w-32 flex-col items-center">
       {current ? (
-        <div className="absolute -top-12">
-          <Ember mood="happy" size={72} />
+        <div className="absolute -top-9">
+          <Ember mood="happy" size={56} />
         </div>
       ) : null}
       <div
-        className={`flex h-20 w-20 items-center justify-center rounded-full border-[3px] border-ink shadow-[0_6px_0_#1f2a55] ${fill} ${
-          current ? "mt-6" : ""
+        className={`flex h-16 w-16 items-center justify-center rounded-full border-[3px] border-ink shadow-[0_5px_0_#1f2a55] ${fill} ${
+          current ? "mt-5" : ""
         }`}
         aria-current={current ? "step" : undefined}
       >
         {state === "done" ? (
-          <CheckIcon size={28} />
+          <CheckIcon size={24} />
         ) : state === "locked" ? (
-          <LockIcon size={26} />
+          <LockIcon size={22} />
         ) : (
-          <span className="font-display text-xl">{start ? "1" : "!"}</span>
+          <span className="font-display text-lg">1</span>
         )}
       </div>
-      <p className="mt-2 font-display text-base text-ink">{label}</p>
-      <p className="text-[11px] font-semibold tracking-wide text-ink-soft">
+      <p className="mt-1.5 font-display text-sm text-ink">{label}</p>
+      <p className="text-[10px] font-semibold tracking-wide text-ink-soft">
         {hint}
       </p>
     </div>
