@@ -14,7 +14,7 @@ import {
   MILESTONES,
 } from "./repo";
 import { getSessionMember, getPartner, type Member } from "./session";
-import { localDay } from "./time";
+import { localDay } from "./today";
 
 const COOKIE = "hearth_member";
 

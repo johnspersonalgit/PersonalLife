@@ -1,6 +1,7 @@
 import db from "./db";
 import { walkStreak } from "./streak";
-import { localDay, shiftDay } from "./time";
+import { shiftDay } from "./time";
+import { localDay } from "./today";
 
 export type AnswerView = {
   memberId: number;

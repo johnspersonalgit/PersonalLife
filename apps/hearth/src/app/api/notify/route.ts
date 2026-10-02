@@ -3,7 +3,7 @@ import db from "@/lib/db";
 import { sendToMember } from "@/lib/push";
 import { isDue, reminderCopy } from "@/lib/reminders";
 import { getStreak } from "@/lib/repo";
-import { localDay } from "@/lib/time";
+import { localDay } from "@/lib/today";
 
 type MemberRow = {
   id: number;

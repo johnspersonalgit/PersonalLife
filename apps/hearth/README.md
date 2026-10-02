@@ -14,6 +14,10 @@ Open http://localhost:3000. Onboarding creates a real couple and a six-letter in
 
 Data lives in `.data/hearth.db` (SQLite, gitignored). Override with `HEARTH_DB`.
 
+## Demo simulator
+
+`node scripts/mock-two-weeks.mjs` replays fourteen synthetic days (both partners answering, notes, a nudge, milestone celebrations at days 7 and 14) and screenshots each day to `/opt/cursor/artifacts/mock`. Run it against a dev server started with `HEARTH_DEMO=1 npm run dev`; the simulator writes `.data/demo-clock` to move "today" day by day. Never set `HEARTH_DEMO` in production. Local demo seed: `node scripts/seed-demo.mjs`.
+
 ## Notifications
 
 Web push is wired end to end: a service worker (`public/sw.js`), subscription storage, a nudge push to the partner, and a nightly reminder for whoever has not answered by their reminder time.

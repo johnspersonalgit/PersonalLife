@@ -8,7 +8,7 @@ import {
   weekStatus,
 } from "@/lib/repo";
 import { getPartner, getSessionMember } from "@/lib/session";
-import { localDay } from "@/lib/time";
+import { localDay } from "@/lib/today";
 import { CountdownChip } from "@/components/countdown-chip";
 import { StreakFlame } from "@/components/flame";
 import { GearIcon, HeartIcon, SealIcon } from "@/components/icons";

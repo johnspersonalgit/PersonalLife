@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ensureDay } from "@/lib/repo";
 import { getSessionMember } from "@/lib/session";
-import { localDay } from "@/lib/time";
+import { localDay } from "@/lib/today";
 import { AnswerForm } from "@/components/answer-form";
 import { BackIcon } from "@/components/icons";
 
