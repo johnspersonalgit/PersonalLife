@@ -180,7 +180,7 @@ async function finishLesson(member: Member, lesson: DayView): Promise<never> {
   const today = localDay();
   const streak = getStreak(member.coupleId, today);
   recordBest(member.coupleId, streak.current);
-  ensureOpenLesson(member.coupleId, member.id, today);
+  await ensureOpenLesson(member.coupleId, member.id, today);
 
   let milestone: number | null = null;
   if (isCalendarDay(lesson.day) && streak.todayComplete) {
@@ -210,7 +210,7 @@ export async function submitAnswer(formData: FormData) {
   }
   if (!text) throw new Error("Write a few words first");
 
-  const day = ensureOpenLesson(member.coupleId, member.id);
+  const day = await ensureOpenLesson(member.coupleId, member.id);
   db.prepare(
     `INSERT INTO answers (day_id, member_id, mood, text) VALUES (?, ?, ?, ?)
      ON CONFLICT(day_id, member_id) DO UPDATE SET mood = excluded.mood, text = excluded.text`,
@@ -221,7 +221,7 @@ export async function submitAnswer(formData: FormData) {
 
 export async function submitRapid(choice: string) {
   const member = await requireMember();
-  const day = ensureOpenLesson(member.coupleId, member.id);
+  const day = await ensureOpenLesson(member.coupleId, member.id);
   if (day.kind !== "rapid" || !day.options.includes(choice)) {
     throw new Error("That is not one of today's options");
   }
@@ -235,7 +235,7 @@ export async function submitRapid(choice: string) {
 
 export async function submitMission(note: string) {
   const member = await requireMember();
-  const day = ensureOpenLesson(member.coupleId, member.id);
+  const day = await ensureOpenLesson(member.coupleId, member.id);
   if (day.kind !== "mission") throw new Error("Today is not a mission");
   db.prepare(
     `INSERT INTO answers (day_id, member_id, mood, text) VALUES (?, ?, 0, ?)
@@ -249,7 +249,7 @@ export async function submitGuessAnswer(text: string) {
   const member = await requireMember();
   const trimmed = text.trim();
   if (!trimmed) throw new Error("Write your answer first");
-  const day = ensureOpenLesson(member.coupleId, member.id);
+  const day = await ensureOpenLesson(member.coupleId, member.id);
   if (day.kind !== "guess") throw new Error("Today is not a guess day");
   if (day.answererId !== member.id) throw new Error("Today is your person's answer");
   db.prepare(
@@ -264,7 +264,7 @@ export async function submitGuess(text: string) {
   const member = await requireMember();
   const trimmed = text.trim();
   if (!trimmed) throw new Error("Write your guess first");
-  const day = ensureOpenLesson(member.coupleId, member.id);
+  const day = await ensureOpenLesson(member.coupleId, member.id);
   if (day.kind !== "guess") throw new Error("Today is not a guess day");
   if (day.answererId === member.id) throw new Error("You are the answerer today");
   const answered = day.answers.some((a) => a.memberId === day.answererId);

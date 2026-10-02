@@ -1,4 +1,5 @@
 import db from "./db";
+import { generateQuestPrompt } from "./generate-prompt";
 import {
   calendarDayOf,
   isCalendarDay,
@@ -225,10 +226,46 @@ function rewriteUnansweredFirstDay(coupleId: number, day: string): void {
   );
 }
 
+function insertGeneratedPrompt(quest: {
+  category: string;
+  text: string;
+  kind: PromptKind;
+}): number {
+  const existing = db
+    .prepare("SELECT id FROM prompts WHERE text = ?")
+    .get(quest.text) as { id: number } | undefined;
+  if (existing) return existing.id;
+  const row = db
+    .prepare(
+      "INSERT INTO prompts (category, text, kind, options) VALUES (?, ?, ?, NULL)",
+    )
+    .run(quest.category, quest.text, quest.kind);
+  return Number(row.lastInsertRowid);
+}
+
+async function pickExtraPromptId(coupleId: number): Promise<number | null> {
+  const cats = coupleCategories(coupleId);
+  const recent = (
+    db
+      .prepare(
+        `SELECT p.text FROM days d JOIN prompts p ON p.id = d.prompt_id
+         WHERE d.couple_id = ? ORDER BY d.day DESC LIMIT 24`,
+      )
+      .all(coupleId) as { text: string }[]
+  ).map((r) => r.text);
+  const generated = await generateQuestPrompt({
+    categories: cats,
+    recentTexts: recent,
+  });
+  if (!generated) return null;
+  return insertGeneratedPrompt(generated);
+}
+
 export function ensureDay(
   coupleId: number,
   day: string,
   preferKind?: PromptKind,
+  promptId?: number,
 ): DayView {
   const existing = db
     .prepare("SELECT 1 FROM days WHERE couple_id = ? AND day = ?")
@@ -236,11 +273,18 @@ export function ensureDay(
   if (!existing) {
     const isFirst = coupleDayCount(coupleId) === 0;
     const extra = !isCalendarDay(day);
-    const picked = pickPromptId(
-      coupleId,
-      day,
-      preferKind ?? (isFirst || extra ? "question" : undefined),
-    );
+    const forced = promptId
+      ? (db
+          .prepare("SELECT id, kind FROM prompts WHERE id = ?")
+          .get(promptId) as { id: number; kind: PromptKind } | undefined)
+      : undefined;
+    const picked =
+      forced ??
+      pickPromptId(
+        coupleId,
+        day,
+        preferKind ?? (isFirst || extra ? "question" : undefined),
+      );
     let answererId: number | null = null;
     if (picked.kind === "guess") {
       const members = db
@@ -307,11 +351,11 @@ export function getLessons(coupleId: number): DayView[] {
   return rows.map((r) => toDayView(r, n));
 }
 
-export function ensureOpenLesson(
+export async function ensureOpenLesson(
   coupleId: number,
   memberId: number,
   today: string = localDay(),
-): DayView {
+): Promise<DayView> {
   ensureDay(coupleId, today);
   const todayLessons = getLessons(coupleId).filter(
     (l) => calendarDayOf(l.day) === today,
@@ -320,7 +364,13 @@ export function ensureOpenLesson(
   if (open) return open;
   const nextSeq =
     todayLessons.reduce((max, l) => Math.max(max, lessonSeq(l.day)), 0) + 1;
-  return ensureDay(coupleId, lessonKey(today, nextSeq), "question");
+  const generatedId = await pickExtraPromptId(coupleId);
+  return ensureDay(
+    coupleId,
+    lessonKey(today, nextSeq),
+    "question",
+    generatedId ?? undefined,
+  );
 }
 
 export function getStreak(coupleId: number, today: string = localDay()): StreakView {

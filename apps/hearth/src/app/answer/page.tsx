@@ -19,7 +19,7 @@ export default async function AnswerPage() {
   const member = await getSessionMember();
   if (!member) redirect("/onboarding");
   const partner = getPartner(member);
-  const lesson = ensureOpenLesson(member.coupleId, member.id);
+  const lesson = await ensureOpenLesson(member.coupleId, member.id);
 
   const myAnswer = lesson.answers.find((a) => a.memberId === member.id);
   const myGuess = lesson.guesses.find((g) => g.memberId === member.id);

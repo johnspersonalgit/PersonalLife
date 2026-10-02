@@ -28,7 +28,7 @@ export default async function Home() {
 
   const partner = getPartner(member);
   const today = ensureDay(member.coupleId, localDay());
-  const current = ensureOpenLesson(member.coupleId, member.id);
+  const current = await ensureOpenLesson(member.coupleId, member.id);
   const lessons = getLessons(member.coupleId);
   const streak = getStreak(member.coupleId);
   const week = weekStatus(member.coupleId);

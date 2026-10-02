@@ -393,7 +393,10 @@ function Intro({
       <p className="mt-2 text-sm font-semibold tracking-widest text-ink-soft uppercase">
         Today&apos;s quest
       </p>
-      <h1 className="mt-2 font-display text-3xl leading-snug text-ink">
+      <h1
+        className="mt-2 font-display text-3xl leading-snug text-ink"
+        data-lesson-prompt=""
+      >
         {prompt}
       </h1>
       <p className="mt-3 text-sm leading-relaxed text-ink-soft">{blurb}</p>
