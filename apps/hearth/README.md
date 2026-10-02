@@ -28,14 +28,19 @@ Web push is wired end to end: a service worker (`public/sw.js`), subscription st
 2. Open the URL on both phones, join with the code, set PINs.
 3. Add to Home Screen. Enable the evening nudge. Done. No Apple review, no store, works today.
 
-## Path to the App Store (only if you still want the badge)
+## Path to the App Store
 
-Two gates are human and cannot be automated:
+Status: Apple Developer account active (gate cleared 2026-10-02). The repo now contains the complete Capacitor scaffold: `capacitor.config.ts`, generated `ios/` (Xcode project, SPM layout) and `android/` projects, the push-notifications plugin, and `native-shell/` as the offline fallback page. `npx cap sync` is verified; `npx cap doctor` reports Android green and iOS ready pending Xcode.
 
-1. Apple Developer enrollment ($99/yr, your identity, your phone).
-2. A public URL from the hosting step above.
+Remaining lane, in order:
 
-Then the mechanical part: wrap the hosted URL with Capacitor (`npm i @capacitor/core @capacitor/ios && npx cap init` pointing `server.url` at the hosted app), build the IPA in Xcode or a cloud Mac builder, and distribute via TestFlight. App Store review for a two-person app is ceremony with no distribution benefit; TestFlight is the realistic lane. Note the Dockerfile here was verified as a production `next build` + standalone output, but the image itself was not built locally (no Docker daemon on the dev machine).
+1. Host the app (Docker section above) so it has a public URL.
+2. Set `HEARTH_PUBLIC_URL` to that URL and run `npx cap sync`.
+3. Build the IPA on a Mac lane: any Mac with Xcode (`npx cap open ios`, archive, upload), or a cloud Mac builder (Codemagic, GitHub Actions macos runner) with your signing assets. Bundle ID is `com.willette.hearth`; match it in App Store Connect.
+4. Native push inside the shell needs the APNs path: create an APNs key in the Apple Developer portal, then wire `@capacitor/push-notifications` registration to a token endpoint. Web push does not run inside the native WKWebView shell; the PWA path already delivers notifications without any of this.
+5. Distribute via TestFlight. Public App Store review for a two-person app is ceremony with no distribution benefit.
+
+Note: the Dockerfile was verified as a production `next build` plus standalone output assembled exactly as the Dockerfile assembles it, but the image itself was not built locally (no Docker daemon on the dev machine).
 
 ## Design receipt
 

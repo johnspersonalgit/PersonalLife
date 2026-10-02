@@ -10,6 +10,8 @@
     "test": "node --experimental-strip-types scripts/test-streak.mjs && node --experimental-strip-types scripts/test-reminders.mjs"
   },
   "dependencies": {
+    "@capacitor/core": "^8.5.2",
+    "@capacitor/push-notifications": "^8.1.2",
     "better-sqlite3": "^13.0.3",
     "next": "16.3.8",
     "react": "19.2.8",
@@ -17,6 +19,9 @@
     "web-push": "^3.6.7"
   },
   "devDependencies": {
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/cli": "^8.5.2",
+    "@capacitor/ios": "^8.5.2",
     "@tailwindcss/postcss": "^4",
     "@types/better-sqlite3": "^9.6.0",
     "@types/node": "^20",
