@@ -6,6 +6,8 @@ export type Member = {
   coupleId: number;
   name: string;
   reminderTime: string;
+  avatar: string | null;
+  color: string | null;
 };
 
 type MemberRow = {
@@ -13,6 +15,8 @@ type MemberRow = {
   couple_id: number;
   name: string;
   reminder_time: string;
+  avatar: string | null;
+  color: string | null;
 };
 
 function toMember(row: MemberRow): Member {
@@ -21,6 +25,8 @@ function toMember(row: MemberRow): Member {
     coupleId: row.couple_id,
     name: row.name,
     reminderTime: row.reminder_time,
+    avatar: row.avatar,
+    color: row.color,
   };
 }
 

@@ -118,7 +118,9 @@ await step("10 settings", async () => {
 });
 
 await step("11 home as Partner", async () => {
-  await page.getByRole("button", { name: /Switch to Partner/ }).click();
+  await page
+    .getByRole("button", { name: /Switch to Partner/ })
+    .evaluate((el) => el.click());
   await page.waitForSelector("text=Ten more minutes at the table");
   await settle();
   await shot("hearth-11-home-partner");

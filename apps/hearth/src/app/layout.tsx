@@ -1,16 +1,29 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Work_Sans } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
-  subsets: ["latin"],
-  axes: ["opsz"],
+const display = localFont({
+  src: "./fonts/BricolageGrotesque-Variable.ttf",
+  variable: "--font-bricolage",
+  display: "swap",
 });
 
-const workSans = Work_Sans({
-  variable: "--font-work-sans",
-  subsets: ["latin"],
+const ui = localFont({
+  src: [
+    { path: "./fonts/DMSans-Variable.ttf", style: "normal" },
+    { path: "./fonts/DMSans-Italic-Variable.ttf", style: "italic" },
+  ],
+  variable: "--font-dm-sans",
+  display: "swap",
+});
+
+const serif = localFont({
+  src: [
+    { path: "./fonts/InstrumentSerif-Regular.ttf", style: "normal", weight: "400" },
+    { path: "./fonts/InstrumentSerif-Italic.ttf", style: "italic", weight: "400" },
+  ],
+  variable: "--font-instrument",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -35,7 +48,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${fraunces.variable} ${workSans.variable} h-full antialiased`}
+      className={`${display.variable} ${ui.variable} ${serif.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

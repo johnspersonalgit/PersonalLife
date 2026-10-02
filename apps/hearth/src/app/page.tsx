@@ -9,6 +9,7 @@ import {
 } from "@/lib/repo";
 import { getPartner, getSessionMember } from "@/lib/session";
 import { localDay } from "@/lib/today";
+import { Avatar } from "@/components/avatar";
 import { StreakFlame } from "@/components/flame";
 import { GearIcon, HeartIcon } from "@/components/icons";
 import { NudgeCard } from "@/components/nudge-card";
@@ -46,13 +47,31 @@ export default async function Home() {
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-5 px-5 pt-6 pb-28">
       <header className="flex items-center justify-between">
         <span className="font-display text-2xl text-ink">Hearth</span>
-        <Link
-          href="/settings"
-          aria-label="Settings"
-          className="flex h-10 w-10 items-center justify-center rounded-full text-ink-soft transition-colors hover:bg-cream hover:text-ink"
-        >
-          <GearIcon size={20} />
-        </Link>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center -space-x-2">
+            <Avatar
+              avatar={member.avatar}
+              name={member.name}
+              color={member.color}
+              size={36}
+            />
+            {partner ? (
+              <Avatar
+                avatar={partner.avatar}
+                name={partner.name}
+                color={partner.color}
+                size={36}
+              />
+            ) : null}
+          </div>
+          <Link
+            href="/settings"
+            aria-label="Settings"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-ink-soft transition-colors hover:bg-cream hover:text-ink"
+          >
+            <GearIcon size={20} />
+          </Link>
+        </div>
       </header>
 
       <div className="flex items-center gap-2">

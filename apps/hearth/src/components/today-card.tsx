@@ -6,6 +6,7 @@ import { Ember } from "./ember";
 import { CheckIcon, SealIcon } from "./icons";
 import { MoodFace } from "./mood-row";
 import { NudgeButton } from "./nudge-button";
+import { Avatar, personTint } from "./avatar";
 
 const KIND_LABELS: Record<string, string> = {
   question: "Question",
@@ -13,6 +14,15 @@ const KIND_LABELS: Record<string, string> = {
   mission: "Mission",
   guess: "Guess day",
 };
+
+export const KIND_CHIP: Record<string, string> = {
+  question: "border-gold-soft bg-gold-soft/30 text-gold-deep",
+  rapid: "border-flame-soft bg-flame-soft/40 text-flame-deep",
+  mission: "border-sage-soft bg-sage-soft/50 text-sage",
+  guess: "border-plum-soft bg-plum-soft/50 text-plum",
+};
+
+export { personTint } from "./avatar";
 
 export function TodayCard({
   today,
@@ -30,9 +40,6 @@ export function TodayCard({
     ? today.answers.find((a) => a.memberId === partner.id)
     : undefined;
   const myGuess = today.guesses.find((g) => g.memberId === member.id);
-  const partnerGuess = partner
-    ? today.guesses.find((g) => g.memberId === partner.id)
-    : undefined;
 
   const emberMood =
     today.complete || myAnswer || myGuess
@@ -46,7 +53,7 @@ export function TodayCard({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="chip">{today.category}</span>
-          <span className="chip border-gold-soft bg-gold-soft/30 text-gold-deep">
+          <span className={`chip ${KIND_CHIP[today.kind]}`}>
             {KIND_LABELS[today.kind]}
           </span>
         </div>
@@ -87,7 +94,6 @@ export function TodayCard({
           partner={partner}
           myAnswer={myAnswer}
           myGuess={myGuess}
-          partnerGuess={partnerGuess}
         />
       ) : (
         <QuestionState
@@ -109,8 +115,8 @@ function QuestionState({
 }: {
   member: Member;
   partner: Member;
-  myAnswer: { mood: number; text: string } | undefined;
-  partnerAnswer: { mood: number; text: string } | undefined;
+  myAnswer: { mood: number; text: string; avatar: string | null; color: string | null } | undefined;
+  partnerAnswer: { mood: number; text: string; avatar: string | null; color: string | null } | undefined;
 }) {
   if (!myAnswer) {
     return (
@@ -144,8 +150,8 @@ function QuestionState({
   }
   return (
     <div className="flex flex-col gap-3">
-      <AnswerBlock name={member.name} mood={myAnswer.mood} text={myAnswer.text} mine />
-      <AnswerBlock name={partner.name} mood={partnerAnswer.mood} text={partnerAnswer.text} />
+      <AnswerBlock name={member.name} mood={myAnswer.mood} text={myAnswer.text} avatar={myAnswer.avatar} color={myAnswer.color} mine />
+      <AnswerBlock name={partner.name} mood={partnerAnswer.mood} text={partnerAnswer.text} avatar={partnerAnswer.avatar} color={partnerAnswer.color} />
     </div>
   );
 }
@@ -160,8 +166,8 @@ function RapidState({
   today: DayView;
   member: Member;
   partner: Member;
-  myAnswer: { text: string } | undefined;
-  partnerAnswer: { text: string } | undefined;
+  myAnswer: { text: string; avatar: string | null; color: string | null } | undefined;
+  partnerAnswer: { text: string; avatar: string | null; color: string | null } | undefined;
 }) {
   if (!myAnswer) {
     return (
@@ -205,8 +211,8 @@ function RapidState({
       >
         {match ? "You match" : "Opposite ends today"}
       </span>
-      <PickBlock name={member.name} pick={myAnswer.text} mine />
-      <PickBlock name={partner.name} pick={partnerAnswer.text} />
+      <PickBlock name={member.name} pick={myAnswer.text} avatar={myAnswer.avatar} color={myAnswer.color} mine />
+      <PickBlock name={partner.name} pick={partnerAnswer.text} avatar={partnerAnswer.avatar} color={partnerAnswer.color} />
     </div>
   );
 }
@@ -221,15 +227,23 @@ function MissionState({
   today: DayView;
   member: Member;
   partner: Member;
-  myAnswer: { text: string } | undefined;
-  partnerAnswer: { text: string } | undefined;
+  myAnswer: { text: string; avatar: string | null; color: string | null } | undefined;
+  partnerAnswer: { text: string; avatar: string | null; color: string | null } | undefined;
 }) {
   if (!today.complete) {
     return (
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-2">
-          <MissionRow name={member.name} done={Boolean(myAnswer)} />
-          <MissionRow name={partner.name} done={Boolean(partnerAnswer)} />
+          <MissionRow
+            name={member.name}
+            done={Boolean(myAnswer)}
+            color={member.color}
+          />
+          <MissionRow
+            name={partner.name}
+            done={Boolean(partnerAnswer)}
+            color={partner.color}
+          />
         </div>
         {!myAnswer ? (
           <Link href="/answer" className="btn btn-primary w-full">
@@ -247,10 +261,10 @@ function MissionState({
         Mission complete
       </span>
       {myAnswer?.text ? (
-        <PickBlock name={member.name} pick={myAnswer.text} mine />
+        <PickBlock name={member.name} pick={myAnswer.text} avatar={myAnswer.avatar} color={myAnswer.color} mine />
       ) : null}
       {partnerAnswer?.text ? (
-        <PickBlock name={partner.name} pick={partnerAnswer.text} />
+        <PickBlock name={partner.name} pick={partnerAnswer.text} avatar={partnerAnswer.avatar} color={partnerAnswer.color} />
       ) : null}
     </div>
   );
@@ -262,14 +276,12 @@ function GuessState({
   partner,
   myAnswer,
   myGuess,
-  partnerGuess,
 }: {
   today: DayView;
   member: Member;
   partner: Member;
   myAnswer: { text: string } | undefined;
   myGuess: { text: string } | undefined;
-  partnerGuess: { text: string } | undefined;
 }) {
   const iAmAnswerer = today.answererId === member.id;
   const answererName = iAmAnswerer ? member.name : partner.name;
@@ -318,23 +330,28 @@ function GuessState({
     return <Sealed text="Sealed. Waiting on your person." />;
   }
 
-  const answerText = today.answers.find(
+  const answerRow = today.answers.find(
     (a) => a.memberId === today.answererId,
-  )?.text;
-  const guessText = today.guesses[0]?.text;
+  );
+  const guessRow = today.guesses[0];
+  const answerText = answerRow?.text;
+  const guessText = guessRow?.text;
   return (
     <div className="flex flex-col gap-3">
       <PickBlock
         name={`${answererName} said`}
         pick={answerText ?? ""}
+        avatar={answerRow?.avatar ?? null}
+        color={answerRow?.color ?? null}
         mine={iAmAnswerer}
       />
       <PickBlock
         name={`${iAmAnswerer ? partner.name : member.name} guessed`}
         pick={guessText ?? ""}
+        avatar={guessRow?.avatar ?? null}
+        color={guessRow?.color ?? null}
         mine={!iAmAnswerer}
       />
-      {partnerGuess || myGuess ? null : null}
     </div>
   );
 }
@@ -348,9 +365,19 @@ function Sealed({ text }: { text: string }) {
   );
 }
 
-function MissionRow({ name, done }: { name: string; done: boolean }) {
+function MissionRow({
+  name,
+  done,
+  color,
+}: {
+  name: string;
+  done: boolean;
+  color: string | null;
+}) {
   return (
-    <div className="flex items-center justify-between rounded-md border border-line bg-cream px-4 py-3">
+    <div
+      className={`flex items-center justify-between rounded-md border px-4 py-3 ${personTint(color)}`}
+    >
       <span className="text-sm font-medium text-ink">{name}</span>
       <span
         className={`flex h-6 w-6 items-center justify-center rounded-full border ${
@@ -368,19 +395,19 @@ function MissionRow({ name, done }: { name: string; done: boolean }) {
 function PickBlock({
   name,
   pick,
-  mine = false,
+  avatar,
+  color,
 }: {
   name: string;
   pick: string;
+  avatar: string | null;
+  color?: string | null;
   mine?: boolean;
 }) {
   return (
-    <div
-      className={`rounded-md border p-4 ${
-        mine ? "border-gold-soft bg-gold-soft/15" : "border-line bg-cream"
-      }`}
-    >
-      <span className="text-xs font-semibold tracking-widest uppercase text-ink-soft">
+    <div className={`rounded-md border p-4 ${personTint(color ?? null)}`}>
+      <span className="flex items-center gap-2 text-xs font-semibold tracking-widest uppercase text-ink-soft">
+        <Avatar avatar={avatar} name={name} color={color} size={24} />
         {name}
       </span>
       <p className="mt-1.5 text-sm leading-relaxed text-ink">{pick}</p>
@@ -392,21 +419,21 @@ function AnswerBlock({
   name,
   mood,
   text,
-  mine = false,
+  avatar,
+  color,
 }: {
   name: string;
   mood: number;
   text: string;
+  avatar: string | null;
+  color?: string | null;
   mine?: boolean;
 }) {
   return (
-    <div
-      className={`rounded-md border p-4 ${
-        mine ? "border-gold-soft bg-gold-soft/15" : "border-line bg-cream"
-      }`}
-    >
+    <div className={`rounded-md border p-4 ${personTint(color ?? null)}`}>
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold tracking-widest uppercase text-ink-soft">
+        <span className="flex items-center gap-2 text-xs font-semibold tracking-widest uppercase text-ink-soft">
+          <Avatar avatar={avatar} name={name} color={color} size={24} />
           {name}
         </span>
         {mood > 0 ? (

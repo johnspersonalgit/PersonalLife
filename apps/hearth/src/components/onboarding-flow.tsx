@@ -8,7 +8,7 @@ import {
   joinRitual,
   lookupRitual,
 } from "@/lib/actions";
-import { Ember } from "./ember";
+import { Avatar } from "./avatar";
 import { CheckIcon, CopyIcon } from "./icons";
 
 const CATEGORIES = [
@@ -32,7 +32,9 @@ export function OnboardingFlow() {
   const [code, setCode] = useState<string | null>(null);
   const [joinCode, setJoinCode] = useState("");
   const [joinPhase, setJoinPhase] = useState<"code" | "name" | "seat">("code");
-  const [seats, setSeats] = useState<{ id: number; name: string }[]>([]);
+  const [seats, setSeats] = useState<
+    { id: number; name: string; avatar: string | null; color: string | null }[]
+  >([]);
   const [seatId, setSeatId] = useState<number | null>(null);
   const [pin, setPin] = useState("");
   const [pinConfirm, setPinConfirm] = useState("");
@@ -65,9 +67,16 @@ export function OnboardingFlow() {
 
         {step === "welcome" && (
           <div className="flex flex-1 flex-col items-center justify-center text-center">
-            <Ember mood="happy" size={110} />
+            <span className="overflow-hidden rounded-full border border-line shadow-sm">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/ember-hero.jpg"
+                alt="Ember, the Hearth mascot"
+                className="h-32 w-32 object-cover"
+              />
+            </span>
             <p className="mt-4 font-display text-5xl text-ink">Hearth</p>
-            <p className="mt-3 font-display text-xl text-gold-deep italic">
+            <p className="mt-3 font-serif text-2xl text-gold-deep italic">
               Two people. One small ritual.
             </p>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink-soft">
@@ -386,7 +395,13 @@ export function OnboardingFlow() {
                         seatId === s.id ? "border-gold bg-gold-soft/20" : ""
                       }`}
                     >
-                      <span className="text-sm font-semibold text-ink">
+                      <span className="flex items-center gap-3 text-sm font-semibold text-ink">
+                        <Avatar
+                          avatar={s.avatar}
+                          name={s.name}
+                          color={s.color}
+                          size={32}
+                        />
                         {s.name}
                       </span>
                       <span className="text-xs font-medium text-gold-deep">

@@ -49,5 +49,9 @@ function Dot({ state }: { state: WeekDot["state"] }) {
       );
     case "missed":
       return <span className={`${base} border-line bg-cream`} />;
+    default: {
+      const _exhaustive: never = state;
+      return _exhaustive;
+    }
   }
 }

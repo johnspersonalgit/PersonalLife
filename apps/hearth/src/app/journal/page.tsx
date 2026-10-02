@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getRecentDays } from "@/lib/repo";
 import { getPartner, getSessionMember } from "@/lib/session";
 import { prettyDay } from "@/lib/time";
+import { Avatar, personTint } from "@/components/avatar";
 import { Ember } from "@/components/ember";
 import { MoodFace } from "@/components/mood-row";
 import { TabBar } from "@/components/tab-bar";
@@ -45,7 +46,7 @@ export default async function JournalPage() {
                 </span>
                 <span className="chip">{d.category}</span>
               </div>
-              <p className="font-display text-lg leading-snug text-ink italic">
+              <p className="font-serif text-xl leading-snug text-ink italic">
                 {d.prompt}
               </p>
               {d.complete ? (
@@ -69,10 +70,10 @@ export default async function JournalPage() {
                     </span>
                   ) : null}
                   {theirs && theirs.text ? (
-                    <Entry name={theirs.memberName} mood={theirs.mood} text={theirs.text} />
+                    <Entry name={theirs.memberName} mood={theirs.mood} text={theirs.text} avatar={theirs.avatar} color={theirs.color} />
                   ) : null}
                   {mine && mine.text ? (
-                    <Entry name={mine.memberName} mood={mine.mood} text={mine.text} mine />
+                    <Entry name={mine.memberName} mood={mine.mood} text={mine.text} avatar={mine.avatar} color={mine.color} mine />
                   ) : null}
                   {d.guesses.map((g) => (
                     <Entry
@@ -80,6 +81,8 @@ export default async function JournalPage() {
                       name={`${g.memberName} guessed`}
                       mood={0}
                       text={g.text}
+                      avatar={g.avatar}
+                      color={g.color}
                     />
                   ))}
                 </div>
@@ -104,21 +107,21 @@ function Entry({
   name,
   mood,
   text,
-  mine = false,
+  avatar,
+  color,
 }: {
   name: string;
   mood: number;
   text: string;
+  avatar: string | null;
+  color?: string | null;
   mine?: boolean;
 }) {
   return (
-    <div
-      className={`rounded-md border p-3.5 ${
-        mine ? "border-gold-soft bg-gold-soft/15" : "border-line bg-cream"
-      }`}
-    >
+    <div className={`rounded-md border p-3.5 ${personTint(color ?? null)}`}>
       <div className="flex items-center justify-between">
-        <span className="text-[10px] font-semibold tracking-widest uppercase text-ink-soft">
+        <span className="flex items-center gap-1.5 text-[10px] font-semibold tracking-widest uppercase text-ink-soft">
+          <Avatar avatar={avatar} name={name} color={color} size={20} />
           {name}
         </span>
         {mood > 0 ? (

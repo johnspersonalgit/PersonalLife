@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getNotes } from "@/lib/repo";
 import { getPartner, getSessionMember } from "@/lib/session";
 import { prettyTime } from "@/lib/time";
+import { Avatar, personTint } from "@/components/avatar";
 import { Ember } from "@/components/ember";
 import { NoteComposer } from "@/components/note-composer";
 import { TabBar } from "@/components/tab-bar";
@@ -39,14 +40,13 @@ export default async function NotesPage() {
                 key={n.id}
                 className={`flex flex-col ${mine ? "items-end" : "items-start"}`}
               >
-                <div
-                  className={`max-w-[85%] rounded-lg border px-4 py-3 ${
-                    mine
-                      ? "border-gold-soft bg-gold-soft/20"
-                      : "border-line bg-card"
-                  }`}
-                >
-                  <p className="text-sm leading-relaxed text-ink">{n.text}</p>
+                <div className={`flex items-end gap-2 ${mine ? "flex-row-reverse" : ""}`}>
+                  <Avatar avatar={n.avatar} name={n.memberName} color={n.color} size={28} />
+                  <div
+                    className={`max-w-[75%] rounded-lg border px-4 py-3 ${personTint(n.color)}`}
+                  >
+                    <p className="text-sm leading-relaxed text-ink">{n.text}</p>
+                  </div>
                 </div>
                 <span className="mt-1 px-1 text-[10px] tracking-wide text-ink-soft">
                   {n.memberName} · {prettyTime(n.createdAt)}

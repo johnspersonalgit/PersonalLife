@@ -10,6 +10,8 @@ CREATE TABLE IF NOT EXISTS members (
   couple_id INTEGER NOT NULL REFERENCES couples(id),
   name TEXT NOT NULL,
   pin_hash TEXT,
+  avatar TEXT,
+  color TEXT,
   reminder_time TEXT NOT NULL DEFAULT '20:00',
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );

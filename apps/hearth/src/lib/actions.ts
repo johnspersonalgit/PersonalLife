@@ -65,8 +65,10 @@ export async function createRitual(
       .prepare("INSERT INTO couples (code, categories) VALUES (?, ?)")
       .run(code, JSON.stringify(cats));
     const member = db
-      .prepare("INSERT INTO members (couple_id, name, pin_hash) VALUES (?, ?, ?)")
-      .run(couple.lastInsertRowid, trimmed, hashPin(pin));
+      .prepare(
+        "INSERT INTO members (couple_id, name, pin_hash, avatar, color) VALUES (?, ?, ?, ?, ?)",
+      )
+      .run(couple.lastInsertRowid, trimmed, hashPin(pin), "bear", "blue");
     db.prepare("INSERT INTO streak_meta (couple_id) VALUES (?)").run(
       couple.lastInsertRowid,
     );
@@ -79,7 +81,7 @@ export async function createRitual(
 
 export type RitualLookup =
   | { status: "open" }
-  | { status: "full"; members: { id: number; name: string }[] }
+  | { status: "full"; members: { id: number; name: string; avatar: string | null; color: string | null }[] }
   | { error: string };
 
 export async function lookupRitual(code: string): Promise<RitualLookup> {
@@ -88,8 +90,13 @@ export async function lookupRitual(code: string): Promise<RitualLookup> {
     .get(code.trim().toUpperCase()) as { id: number } | undefined;
   if (!couple) return { error: "That code does not match any ritual." };
   const members = db
-    .prepare("SELECT id, name FROM members WHERE couple_id = ? ORDER BY id")
-    .all(couple.id) as { id: number; name: string }[];
+    .prepare("SELECT id, name, avatar, color FROM members WHERE couple_id = ? ORDER BY id")
+    .all(couple.id) as {
+    id: number;
+    name: string;
+    avatar: string | null;
+    color: string | null;
+  }[];
   if (members.length >= 2) return { status: "full", members };
   return { status: "open" };
 }
@@ -111,8 +118,10 @@ export async function joinRitual(
     .get(couple.id) as { n: number };
   if (count.n >= 2) return { error: "This ritual already has two people." };
   const member = db
-    .prepare("INSERT INTO members (couple_id, name, pin_hash) VALUES (?, ?, ?)")
-    .run(couple.id, trimmed, hashPin(pin));
+    .prepare(
+      "INSERT INTO members (couple_id, name, pin_hash, avatar, color) VALUES (?, ?, ?, ?, ?)",
+    )
+    .run(couple.id, trimmed, hashPin(pin), "rabbit", "rose");
   await setSession(Number(member.lastInsertRowid));
   return { ok: true };
 }
@@ -134,6 +143,18 @@ export async function claimSeat(
   if (!verifyPin(pin, row.pin_hash)) return { error: "Wrong PIN for that seat." };
   await setSession(row.id);
   return { ok: true };
+}
+
+export async function updateAvatar(avatarId: string) {
+  const member = await requireMember();
+  const allowed = ["ember", "bear", "rabbit", "fox", "deer"];
+  if (!allowed.includes(avatarId)) return;
+  db.prepare("UPDATE members SET avatar = ? WHERE id = ?").run(
+    avatarId,
+    member.id,
+  );
+  revalidatePath("/settings");
+  revalidatePath("/");
 }
 
 export async function updatePin(

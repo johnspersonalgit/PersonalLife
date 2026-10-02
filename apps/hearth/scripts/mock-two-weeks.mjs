@@ -17,6 +17,13 @@ fs.mkdirSync(OUT, { recursive: true });
 const db = new Database(dbPath);
 db.pragma("journal_mode = WAL");
 db.exec(fs.readFileSync(path.join(root, "src", "lib", "schema.sql"), "utf8"));
+const memberCols = db.prepare("PRAGMA table_info(members)").all();
+if (!memberCols.some((c) => c.name === "avatar")) {
+  db.exec("ALTER TABLE members ADD COLUMN avatar TEXT");
+}
+if (!memberCols.some((c) => c.name === "color")) {
+  db.exec("ALTER TABLE members ADD COLUMN color TEXT");
+}
 
 const promptId = (text) =>
   db.prepare("SELECT id FROM prompts WHERE text = ?").get(text).id;
@@ -119,12 +126,16 @@ const coupleId = Number(
 );
 const { hashPin } = await import("../src/lib/pin.mjs");
 const john = Number(
-  db.prepare("INSERT INTO members (couple_id, name, pin_hash) VALUES (?, ?, ?)")
-    .run(coupleId, "John", hashPin("1111")).lastInsertRowid,
+  db.prepare(
+    "INSERT INTO members (couple_id, name, pin_hash, avatar, color) VALUES (?, ?, ?, ?, ?)",
+  )
+    .run(coupleId, "John", hashPin("1111"), "bear", "blue").lastInsertRowid,
 );
 const partner = Number(
-  db.prepare("INSERT INTO members (couple_id, name, pin_hash) VALUES (?, ?, ?)")
-    .run(coupleId, "Partner", hashPin("2222")).lastInsertRowid,
+  db.prepare(
+    "INSERT INTO members (couple_id, name, pin_hash, avatar, color) VALUES (?, ?, ?, ?, ?)",
+  )
+    .run(coupleId, "Partner", hashPin("2222"), "rabbit", "rose").lastInsertRowid,
 );
 db.prepare("INSERT INTO streak_meta (couple_id, best, celebrated) VALUES (?, 0, '[]')").run(coupleId);
 

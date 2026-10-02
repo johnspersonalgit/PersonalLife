@@ -9,6 +9,7 @@ import { BackIcon } from "@/components/icons";
 import { MissionForm } from "@/components/mission-form";
 import { NudgeButton } from "@/components/nudge-button";
 import { RapidForm } from "@/components/rapid-form";
+import { KIND_CHIP } from "@/components/today-card";
 
 export const dynamic = "force-dynamic";
 
@@ -94,7 +95,7 @@ export default async function AnswerPage() {
           <BackIcon size={20} />
         </Link>
         <span className="chip">{today.category}</span>
-        <span className="chip border-gold-soft bg-gold-soft/30 text-gold-deep">
+        <span className={`chip ${KIND_CHIP[today.kind]}`}>
           {KIND_LABELS[today.kind]}
         </span>
       </header>

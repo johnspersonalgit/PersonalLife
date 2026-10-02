@@ -6,6 +6,8 @@ import { localDay } from "./today";
 export type AnswerView = {
   memberId: number;
   memberName: string;
+  avatar: string | null;
+  color: string | null;
   mood: number;
   text: string;
   createdAt: string;
@@ -14,6 +16,8 @@ export type AnswerView = {
 export type GuessView = {
   memberId: number;
   memberName: string;
+  avatar: string | null;
+  color: string | null;
   text: string;
   createdAt: string;
 };
@@ -63,6 +67,8 @@ type DayRow = {
 type AnswerRow = {
   member_id: number;
   member_name: string;
+  member_avatar: string | null;
+  member_color: string | null;
   mood: number;
   text: string;
   created_at: string;
@@ -120,7 +126,7 @@ function toDayView(row: DayRow, memberCount: number): DayView {
   const answers = (
     db
       .prepare(
-        `SELECT a.member_id, m.name AS member_name, a.mood, a.text, a.created_at
+        `SELECT a.member_id, m.name AS member_name, m.avatar AS member_avatar, m.color AS member_color, a.mood, a.text, a.created_at
          FROM answers a JOIN members m ON m.id = a.member_id
          WHERE a.day_id = ? ORDER BY a.created_at`,
       )
@@ -128,6 +134,8 @@ function toDayView(row: DayRow, memberCount: number): DayView {
   ).map((a) => ({
     memberId: a.member_id,
     memberName: a.member_name,
+    avatar: a.member_avatar,
+    color: a.member_color,
     mood: a.mood,
     text: a.text,
     createdAt: a.created_at,
@@ -135,19 +143,23 @@ function toDayView(row: DayRow, memberCount: number): DayView {
   const guesses = (
     db
       .prepare(
-        `SELECT g.member_id, m.name AS member_name, g.text, g.created_at
+        `SELECT g.member_id, m.name AS member_name, m.avatar AS member_avatar, m.color AS member_color, g.text, g.created_at
          FROM guesses g JOIN members m ON m.id = g.member_id
          WHERE g.day_id = ? ORDER BY g.created_at`,
       )
       .all(row.id) as {
       member_id: number;
       member_name: string;
+      member_avatar: string | null;
+      member_color: string | null;
       text: string;
       created_at: string;
     }[]
   ).map((g) => ({
     memberId: g.member_id,
     memberName: g.member_name,
+    avatar: g.member_avatar,
+    color: g.member_color,
     text: g.text,
     createdAt: g.created_at,
   }));
@@ -338,6 +350,8 @@ export type NoteView = {
   id: number;
   memberId: number;
   memberName: string;
+  avatar: string | null;
+  color: string | null;
   text: string;
   createdAt: string;
 };
@@ -345,7 +359,7 @@ export type NoteView = {
 export function getNotes(coupleId: number, limit = 100): NoteView[] {
   const rows = db
     .prepare(
-      `SELECT n.id, n.member_id, m.name AS member_name, n.text, n.created_at
+      `SELECT n.id, n.member_id, m.name AS member_name, m.avatar AS member_avatar, m.color AS member_color, n.text, n.created_at
        FROM notes n JOIN members m ON m.id = n.member_id
        WHERE n.couple_id = ? ORDER BY n.created_at DESC LIMIT ?`,
     )
@@ -353,6 +367,8 @@ export function getNotes(coupleId: number, limit = 100): NoteView[] {
     id: number;
     member_id: number;
     member_name: string;
+    member_avatar: string | null;
+    member_color: string | null;
     text: string;
     created_at: string;
   }[];
@@ -360,6 +376,8 @@ export function getNotes(coupleId: number, limit = 100): NoteView[] {
     id: r.id,
     memberId: r.member_id,
     memberName: r.member_name,
+    avatar: r.member_avatar,
+    color: r.member_color,
     text: r.text,
     createdAt: r.created_at,
   }));

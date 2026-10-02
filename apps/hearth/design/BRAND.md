@@ -22,22 +22,46 @@ Warm, private, quietly premium. A ritual object, not an app dashboard. Every scr
 | flame | `#d9763a` | Streak flame, Ember body |
 | flame-deep | `#b85a24` | Flame emphasis |
 | flame-soft | `#f6d3b3` | Flame tints, countdown chip |
-| sage | `#7d8b6f` | Confirmation |
+| sage | `#7d8b6f` | Mission kind, confirmation |
+| sage-soft | `#dde3d3` | Mission tints |
+| plum | `#8f6e8e` | Guess-day kind |
+| plum-soft | `#e6d9e6` | Guess-day tints |
+| honey | `#d9a441` | Milestones, best-streak moments |
+| honey-soft | `#f3e2b8` | Honey tints |
+| blue | `#5b7b9c` | His color. Avatar ring, his answers, his notes. |
+| blue-soft | `#dfe8f1` | His tints |
+| rose | `#a86e9e` | Hers. Pink-purple. Avatar ring, her answers, her notes. |
+| rose-soft | `#eedfeb` | Her tints |
 | crit | `#b4552d` | Destructive, errors |
 
-No raw hex in components. No second palette. Gold must be visible on every screen, not just present in tokens.
+No raw hex in components. Gold must be visible on every screen, not just present in tokens.
+
+### Person colors
+
+Blue is him. Rose is her. Assigned at join (first seat blue, second seat rose) and never swapped for decoration. Every answer, note, and avatar ring carries the person color so you can read who spoke without reading the name.
+
+### Kind colors (the Duolingo move, warmed)
+
+Each activity kind has a signature color, used on its chip and moments of emphasis: question = gold, rapid fire = flame, mission = sage, guess day = plum. Kind colors never replace the gold primary action and never stack two saturated tints on one card.
 
 ## Typography
 
-Pending John's font files. When they land:
+John's files, installed in `src/app/fonts/` and wired via `next/font/local`:
 
-- Display face: headlines, questions, numbers that matter (streak count). Fraunces is the placeholder.
-- UI face: body, controls, chips. Work Sans is the placeholder.
-- Mono: codes and clocks only (system mono stack, no file needed).
+- Display: Bricolage Grotesque (variable). Headlines, questions, streak numerals, the wordmark.
+- UI: DM Sans (variable, plus italic). Body, controls, chips.
+- Serif accent: Instrument Serif (regular + italic). The tagline, journal prompt lines, and other quiet editorial moments.
+- Mono: system mono stack for codes and invite codes only.
 
-Files go in `src/app/fonts/`, wired through `next/font/local` in `src/app/layout.tsx`, mapped to `--font-display` and `--font-ui` in `globals.css`. Nothing else changes.
+Type rules: display for moments, UI for work, serif for whispers, mono for codes. Never more than two families on one screen (display + UI, or serif + UI). Sentence case everywhere except chips and buttons, which stay small-caps tracked.
 
-Type rules that do not change with the files: display for moments, UI for work, mono for codes. Never a third family on one screen. Sentence case everywhere except chips and buttons, which stay small-caps tracked.
+## Avatars
+
+Each person picks a clay creature, generated in Ember's exact style (template: `design/avatar-prompts.md`). The starter set lives in `public/avatars/`: ember, bear (honey), rabbit (plum), fox (flame), deer (sage). Rules:
+
+- Avatars are busts on cream, always in a circular frame with a line border.
+- Fallback is a single initial in a gold-soft circle.
+- New creatures must come from the same prompt template. No photos, no off-style art.
 
 ## Ember
 

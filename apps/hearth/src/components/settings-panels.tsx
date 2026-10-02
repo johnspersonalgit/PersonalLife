@@ -1,8 +1,47 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { updateCategories, updatePin } from "@/lib/actions";
+import { updateAvatar, updateCategories, updatePin } from "@/lib/actions";
+import { AVATARS } from "./avatar";
 import { CheckIcon } from "./icons";
+
+export function AvatarPanel({ current }: { current: string | null }) {
+  const [selected, setSelected] = useState(current ?? "ember");
+  const [pending, startTransition] = useTransition();
+
+  return (
+    <div className="flex items-center gap-3">
+      {AVATARS.map((a) => {
+        const on = selected === a.id;
+        return (
+          <button
+            key={a.id}
+            type="button"
+            aria-pressed={on}
+            aria-label={`Choose ${a.label} avatar`}
+            disabled={pending}
+            onClick={() => {
+              setSelected(a.id);
+              startTransition(() => updateAvatar(a.id));
+            }}
+            className={`overflow-hidden rounded-full border-2 transition-all ${
+              on
+                ? "border-gold scale-110 shadow-sm"
+                : "border-line hover:border-gold-soft"
+            }`}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={a.src}
+              alt={a.label}
+              className="h-12 w-12 object-cover"
+            />
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 const CATEGORIES = [
   { id: "us", name: "Us" },

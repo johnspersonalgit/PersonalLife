@@ -3,8 +3,13 @@ import { redirect } from "next/navigation";
 import db from "@/lib/db";
 import { signOut, switchProfile, updateProfile } from "@/lib/actions";
 import { getPartner, getSessionMember } from "@/lib/session";
+import { Avatar } from "@/components/avatar";
 import { BackIcon } from "@/components/icons";
-import { CategoryPanel, PinPanel } from "@/components/settings-panels";
+import {
+  AvatarPanel,
+  CategoryPanel,
+  PinPanel,
+} from "@/components/settings-panels";
 
 export const dynamic = "force-dynamic";
 
@@ -37,6 +42,17 @@ export default async function SettingsPage() {
         >
           You
         </h2>
+        <div className="flex items-center gap-3">
+          <Avatar
+            avatar={member.avatar}
+            name={member.name}
+            color={member.color}
+            size={48}
+          />
+          <p className="text-sm text-ink-soft">
+            {member.color === "rose" ? "Rose seat" : "Blue seat"}
+          </p>
+        </div>
         <form action={updateProfile} className="flex flex-col gap-3">
           <label className="flex flex-col gap-1.5">
             <span className="text-xs font-medium text-ink-soft">Your name</span>
@@ -73,9 +89,19 @@ export default async function SettingsPage() {
         </h2>
         <div className="flex items-center justify-between">
           <span className="text-sm text-ink-soft">Partner</span>
-          <span className="text-sm font-semibold text-ink">
-            {partner ? partner.name : "Not joined yet"}
-          </span>
+          {partner ? (
+            <span className="flex items-center gap-2 text-sm font-semibold text-ink">
+              <Avatar
+                avatar={partner.avatar}
+                name={partner.name}
+                color={partner.color}
+                size={28}
+              />
+              {partner.name}
+            </span>
+          ) : (
+            <span className="text-sm font-semibold text-ink">Not joined yet</span>
+          )}
         </div>
         <div className="flex items-center justify-between">
           <span className="text-sm text-ink-soft">Invite code</span>
@@ -83,6 +109,16 @@ export default async function SettingsPage() {
             {couple.code}
           </span>
         </div>
+      </section>
+
+      <section className="card flex flex-col gap-3 p-5" aria-labelledby="avatar-heading">
+        <h2
+          id="avatar-heading"
+          className="text-[10px] font-semibold tracking-widest uppercase text-ink-soft"
+        >
+          Your avatar
+        </h2>
+        <AvatarPanel current={member.avatar} />
       </section>
 
       <section className="card flex flex-col gap-3 p-5" aria-labelledby="pin-heading">

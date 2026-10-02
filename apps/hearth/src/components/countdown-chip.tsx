@@ -11,16 +11,20 @@ function format(ms: number): string {
 }
 
 export function CountdownChip() {
-  const [left, setLeft] = useState(() => msUntilMidnight());
+  const [left, setLeft] = useState<number | null>(null);
 
   useEffect(() => {
-    const t = setInterval(() => setLeft(msUntilMidnight()), 30000);
+    const update = () => setLeft(msUntilMidnight());
+    update();
+    const t = setInterval(update, 30000);
     return () => clearInterval(t);
   }, []);
 
   return (
     <span className="chip border-flame-soft bg-flame-soft/40 text-flame-deep normal-case tracking-normal">
-      Streak rests at midnight. {format(left)} left.
+      {left === null
+        ? "Streak rests at midnight."
+        : `Streak rests at midnight. ${format(left)} left.`}
     </span>
   );
 }

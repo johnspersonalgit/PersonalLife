@@ -12,6 +12,14 @@ db.pragma("journal_mode = WAL");
 db.pragma("foreign_keys = ON");
 db.exec(fs.readFileSync(path.join(root, "src", "lib", "schema.sql"), "utf8"));
 
+const memberCols = db.prepare("PRAGMA table_info(members)").all();
+if (!memberCols.some((c) => c.name === "avatar")) {
+  db.exec("ALTER TABLE members ADD COLUMN avatar TEXT");
+}
+if (!memberCols.some((c) => c.name === "color")) {
+  db.exec("ALTER TABLE members ADD COLUMN color TEXT");
+}
+
 const prompts = JSON.parse(
   fs.readFileSync(path.join(root, "src", "lib", "prompts.json"), "utf8"),
 );
@@ -53,16 +61,17 @@ const seed = db.transaction(() => {
   const john = Number(
     db
       .prepare(
-        "INSERT INTO members (couple_id, name, pin_hash) VALUES (?, ?, ?)",
+        "INSERT INTO members (couple_id, name, pin_hash, avatar, color) VALUES (?, ?, ?, ?, ?)",
       )
-      .run(coupleId, "John", hashPin("1111")).lastInsertRowid,
+      .run(coupleId, "John", hashPin("1111"), "bear", "blue").lastInsertRowid,
   );
   const partner = Number(
     db
       .prepare(
-        "INSERT INTO members (couple_id, name, pin_hash) VALUES (?, ?, ?)",
+        "INSERT INTO members (couple_id, name, pin_hash, avatar, color) VALUES (?, ?, ?, ?, ?)",
       )
-      .run(coupleId, "Partner", hashPin("2222")).lastInsertRowid,
+      .run(coupleId, "Partner", hashPin("2222"), "rabbit", "rose")
+      .lastInsertRowid,
   );
   db.prepare(
     "INSERT INTO streak_meta (couple_id, best, celebrated) VALUES (?, ?, ?)",

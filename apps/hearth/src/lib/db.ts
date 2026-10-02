@@ -32,6 +32,39 @@ const memberCols = db.prepare("PRAGMA table_info(members)").all() as {
 if (!memberCols.some((c) => c.name === "pin_hash")) {
   db.exec("ALTER TABLE members ADD COLUMN pin_hash TEXT");
 }
+if (!memberCols.some((c) => c.name === "avatar")) {
+  db.exec("ALTER TABLE members ADD COLUMN avatar TEXT");
+}
+if (!memberCols.some((c) => c.name === "color")) {
+  db.exec("ALTER TABLE members ADD COLUMN color TEXT");
+}
+
+const uncolored = db
+  .prepare(
+    "SELECT id, couple_id FROM members WHERE color IS NULL OR color = '' ORDER BY id",
+  )
+  .all() as { id: number; couple_id: number }[];
+if (uncolored.length) {
+  const seen = new Map<number, number>();
+  const paint = db.prepare("UPDATE members SET color = ? WHERE id = ?");
+  for (const row of uncolored) {
+    const nth = seen.get(row.couple_id) ?? 0;
+    paint.run(nth === 0 ? "blue" : "rose", row.id);
+    seen.set(row.couple_id, nth + 1);
+  }
+}
+
+const unavatar = db
+  .prepare(
+    "SELECT id, color FROM members WHERE avatar IS NULL OR avatar = ''",
+  )
+  .all() as { id: number; color: string | null }[];
+if (unavatar.length) {
+  const paint = db.prepare("UPDATE members SET avatar = ? WHERE id = ?");
+  for (const row of unavatar) {
+    paint.run(row.color === "rose" ? "rabbit" : "bear", row.id);
+  }
+}
 
 const promptCols = db.prepare("PRAGMA table_info(prompts)").all() as {
   name: string;
