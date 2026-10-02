@@ -1,40 +1,43 @@
-import crypto from "node:crypto";
 import fs from "node:fs";
+import jwt from "jsonwebtoken";
 
 const keyId = process.env.ASC_KEY_ID?.trim();
 const issuerId = process.env.ASC_ISSUER_ID?.trim();
 const pemPath = process.env.ASC_KEY_PATH;
+const presetTeam = process.env.APPLE_TEAM_ID?.trim();
 const bundleId = "com.willette.hearth";
 
 if (!keyId || !issuerId || !pemPath) {
   throw new Error("ASC_KEY_ID, ASC_ISSUER_ID, and ASC_KEY_PATH are required.");
 }
+if (!/^[0-9a-f-]{36}$/i.test(issuerId)) {
+  throw new Error(
+    "ASC_ISSUER_ID should be the UUID labeled Issuer ID at the top of App Store Connect → Integrations, not the Key ID.",
+  );
+}
+if (keyId.length < 8 || keyId.length > 16 || /\s/.test(keyId)) {
+  throw new Error("ASC_KEY_ID should be the short Key ID from the keys table.");
+}
 
 const pem = fs.readFileSync(pemPath, "utf8");
 
-function b64url(value) {
-  const buf = Buffer.isBuffer(value) ? value : Buffer.from(value);
-  return buf.toString("base64url");
+function token() {
+  return jwt.sign({ iss: issuerId, aud: "appstoreconnect-v1" }, pem, {
+    algorithm: "ES256",
+    expiresIn: "12m",
+    header: { alg: "ES256", kid: keyId, typ: "JWT" },
+  });
 }
 
-function token() {
-  const now = Math.floor(Date.now() / 1000);
-  const header = b64url(JSON.stringify({ alg: "ES256", kid: keyId, typ: "JWT" }));
-  const payload = b64url(
-    JSON.stringify({
-      iss: issuerId,
-      iat: now,
-      exp: now + 12 * 60,
-      aud: "appstoreconnect-v1",
-    }),
-  );
-  const data = `${header}.${payload}`;
-  const key = crypto.createPrivateKey(pem);
-  const sig = crypto.sign("sha256", Buffer.from(data), {
-    key,
-    dsaEncoding: "ieee-p1363",
-  });
-  return `${data}.${b64url(sig)}`;
+function writeTeam(team) {
+  const out = process.env.GITHUB_ENV;
+  if (out) fs.appendFileSync(out, `APPLE_TEAM_ID=${team}\n`);
+  console.log("team_ok");
+}
+
+if (presetTeam) {
+  writeTeam(presetTeam);
+  process.exit(0);
 }
 
 async function asc(method, path, body) {
@@ -112,6 +115,4 @@ if (!apps?.data?.length) {
   }
 }
 
-const out = process.env.GITHUB_ENV;
-if (out) fs.appendFileSync(out, `APPLE_TEAM_ID=${team}\n`);
-console.log("team_ok", team);
+writeTeam(team);

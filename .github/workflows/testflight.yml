@@ -95,10 +95,12 @@ jobs:
       - name: Resolve Apple team
         run: |
           export ASC_KEY_PATH="$HOME/private_keys/AuthKey_${ASC_KEY_ID}.p8"
+          npm install --no-save jsonwebtoken
           node scripts/asc-team.mjs
         env:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
 
       - name: Archive
         working-directory: apps/hearth/ios/App
