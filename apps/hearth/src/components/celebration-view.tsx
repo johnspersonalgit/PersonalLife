@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Ember } from "./ember";
+import { JuiceStats } from "./juice-stats";
 
 const EMBERS = [
   { left: "18%", delay: "0s", size: 6 },
@@ -60,14 +61,20 @@ export function CelebrationView({
       >
         {count}
       </p>
-      <h1 className="mt-2 font-display text-3xl text-ink">
-        {streak === 1 ? "Day Streak" : "Day Streak"}
-      </h1>
+      <h1 className="mt-2 font-display text-3xl text-ink">Quest complete</h1>
       <p className="mt-3 max-w-xs text-sm leading-relaxed text-ink-soft">
         {streak <= 1
-          ? "The flame is lit. Keep going whenever you want."
-          : "The flame grows because you both showed up."}
+          ? "The flame is lit. The next node is already waiting."
+          : "The flame grew. Keep the path moving."}
       </p>
+
+      <JuiceStats
+        items={[
+          { label: "Streak", value: String(streak) },
+          { label: "Today", value: "Sealed" },
+          { label: "Next", value: "Open" },
+        ]}
+      />
 
       {milestoneName ? (
         <div className="card animate-rise mt-6 w-full max-w-xs px-5 py-4">
@@ -79,7 +86,7 @@ export function CelebrationView({
       ) : null}
 
       <Link href="/" className="btn btn-primary mt-10 w-full max-w-xs">
-        Continue
+        Keep going
       </Link>
     </main>
   );

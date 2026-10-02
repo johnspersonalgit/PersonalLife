@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getRecentDays } from "@/lib/repo";
+import { getNotes, getRecentDays } from "@/lib/repo";
+import { journalThreads } from "@/lib/journal";
 import { getPartner, getSessionMember } from "@/lib/session";
 import { prettyDay } from "@/lib/time";
 import { Avatar, personTint } from "@/components/avatar";
 import { Ember } from "@/components/ember";
 import { MoodFace } from "@/components/mood-row";
+import { NoteComposer } from "@/components/note-composer";
 import { TabBar } from "@/components/tab-bar";
 
 export const dynamic = "force-dynamic";
@@ -14,96 +16,148 @@ export default async function JournalPage() {
   const member = await getSessionMember();
   if (!member) redirect("/onboarding");
   const partner = getPartner(member);
-  const days = getRecentDays(member.coupleId, 90);
+  const threads = journalThreads(getRecentDays(member.coupleId, 90));
+  const notes = getNotes(member.coupleId, 6);
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-5 pt-6 pb-28">
       <header>
-        <h1 className="font-display text-3xl text-ink">Journal</h1>
+        <h1 className="font-display text-3xl text-ink">Us</h1>
         <p className="mt-1 text-sm text-ink-soft">
-          The record that writes itself, one day at a time.
+          The record that writes itself, one thread at a time.
         </p>
       </header>
 
-      {days.length === 0 ? (
+      {threads.length === 0 ? (
         <div className="card flex flex-col items-center gap-2 p-6 text-center">
           <Ember mood="sleepy" size={112} />
           <p className="text-sm text-ink-soft">
-            No entries yet. Answer today&rsquo;s question and the journal
-            begins.
+            No entries yet. Walk today&rsquo;s path and the record begins.
           </p>
         </div>
       ) : (
-        days.map((d) => {
-          const mine = d.answers.find((a) => a.memberId === member.id);
+        threads.map((thread) => {
+          const root = thread.root;
+          const mine = root?.answers.find((a) => a.memberId === member.id);
           const theirs = partner
-            ? d.answers.find((a) => a.memberId === partner.id)
+            ? root?.answers.find((a) => a.memberId === partner.id)
             : undefined;
           return (
-            <article key={d.id} className="card flex flex-col gap-3 p-5">
-              <Link
-                href={`/quest/${d.id}`}
-                className="contents"
-                data-quest-link={d.complete ? "done" : "open"}
-              >
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-semibold tracking-widest uppercase text-ink-soft">
-                  {prettyDay(d.day)}
-                </span>
-                <span className="chip">{d.category}</span>
-              </div>
-              <p className="font-serif text-xl leading-snug text-ink italic">
-                {d.prompt}
-              </p>
-              {d.complete ? (
-                <div className="flex flex-col gap-2">
-                  {d.kind === "rapid" && mine && theirs ? (
-                    <span
-                      className={`chip self-start ${
-                        mine.text === theirs.text
-                          ? "border-gold bg-gold text-card"
-                          : "border-flame-soft bg-flame-soft/40 text-flame-deep"
-                      }`}
+            <article key={thread.day} className="card flex flex-col gap-3 p-5">
+              {root ? (
+                <Link
+                  href={`/quest/${root.id}`}
+                  className="contents"
+                  data-quest-link={root.complete ? "done" : "open"}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-semibold tracking-widest uppercase text-ink-soft">
+                      {prettyDay(root.day)}
+                    </span>
+                    <span className="chip">{root.category}</span>
+                  </div>
+                  <p className="font-serif text-xl leading-snug text-ink italic">
+                    {root.prompt}
+                  </p>
+                  {root.complete ? (
+                    <div className="flex flex-col gap-2">
+                      {theirs && theirs.text ? (
+                        <Entry
+                          name={theirs.memberName}
+                          mood={theirs.mood}
+                          text={theirs.text}
+                          avatar={theirs.avatar}
+                          color={theirs.color}
+                        />
+                      ) : null}
+                      {mine && mine.text ? (
+                        <Entry
+                          name={mine.memberName}
+                          mood={mine.mood}
+                          text={mine.text}
+                          avatar={mine.avatar}
+                          color={mine.color}
+                        />
+                      ) : null}
+                    </div>
+                  ) : root.answers.length ? (
+                    <p className="text-sm text-ink-soft">
+                      Sealed. Waiting on {partner?.name ?? "your person"}.
+                    </p>
+                  ) : (
+                    <p className="text-sm text-ink-soft">
+                      The flame rested this day.
+                    </p>
+                  )}
+                </Link>
+              ) : (
+                <p className="text-[10px] font-semibold tracking-widest uppercase text-ink-soft">
+                  {prettyDay(thread.day)}
+                </p>
+              )}
+
+              {thread.layers.length ? (
+                <div className="flex flex-col gap-2 border-t border-ink/15 pt-3">
+                  {thread.layers.map((layer) => (
+                    <Link
+                      key={layer.id}
+                      href={`/quest/${layer.id}`}
+                      className="rounded-md border border-ink/20 px-3 py-2"
+                      data-quest-link={layer.complete ? "done" : "open"}
+                      data-thread-layer={layer.depth}
                     >
-                      {mine.text === theirs.text
-                        ? "You matched"
-                        : "Opposite ends"}
-                    </span>
-                  ) : null}
-                  {d.kind === "mission" ? (
-                    <span className="chip self-start border-gold bg-gold text-card">
-                      Mission complete
-                    </span>
-                  ) : null}
-                  {theirs && theirs.text ? (
-                    <Entry name={theirs.memberName} mood={theirs.mood} text={theirs.text} avatar={theirs.avatar} color={theirs.color} />
-                  ) : null}
-                  {mine && mine.text ? (
-                    <Entry name={mine.memberName} mood={mine.mood} text={mine.text} avatar={mine.avatar} color={mine.color} mine />
-                  ) : null}
-                  {d.guesses.map((g) => (
-                    <Entry
-                      key={g.memberId}
-                      name={`${g.memberName} guessed`}
-                      mood={0}
-                      text={g.text}
-                      avatar={g.avatar}
-                      color={g.color}
-                    />
+                      <p className="text-[10px] font-extrabold tracking-[0.14em] text-ink-soft uppercase">
+                        Layer {layer.depth}
+                      </p>
+                      <p className="mt-1 text-sm leading-snug text-ink">
+                        {layer.prompt}
+                      </p>
+                    </Link>
                   ))}
                 </div>
-              ) : d.answers.length || d.guesses.length ? (
-                <p className="text-sm text-ink-soft">
-                  One of you answered. The day stayed half open.
-                </p>
-              ) : (
-                <p className="text-sm text-ink-soft">The flame rested this day.</p>
-              )}
-              </Link>
+              ) : null}
             </article>
           );
         })
       )}
+
+      <section className="flex flex-col gap-3 pt-2" id="line" aria-label="Leave a line">
+        <h2 className="text-[10px] font-semibold tracking-widest uppercase text-ink-soft">
+          Leave a line
+        </h2>
+        {notes.map((n) => {
+          const mine = n.memberId === member.id;
+          return (
+            <div
+              key={n.id}
+              className={`flex flex-col ${mine ? "items-end" : "items-start"}`}
+            >
+              <div
+                className={`flex items-end gap-2 ${mine ? "flex-row-reverse" : ""}`}
+              >
+                <Avatar
+                  avatar={n.avatar}
+                  name={n.memberName}
+                  color={n.color}
+                  size={28}
+                />
+                <div
+                  className={`max-w-[75%] rounded-lg border px-4 py-3 ${personTint(n.color)}`}
+                >
+                  <p className="text-sm leading-relaxed text-ink">{n.text}</p>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+        {partner ? (
+          <NoteComposer partnerName={partner.name} />
+        ) : (
+          <p className="text-sm text-ink-soft">
+            A line opens once your person joins with your code.
+          </p>
+        )}
+      </section>
 
       <TabBar active="/journal" />
     </main>
@@ -122,7 +176,6 @@ function Entry({
   text: string;
   avatar: string | null;
   color?: string | null;
-  mine?: boolean;
 }) {
   return (
     <div className={`rounded-md border p-3.5 ${personTint(color ?? null)}`}>

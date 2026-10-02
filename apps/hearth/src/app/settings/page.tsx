@@ -10,6 +10,7 @@ import {
   CategoryPanel,
   PinPanel,
 } from "@/components/settings-panels";
+import { PushOptIn } from "@/components/push-opt-in";
 
 export const dynamic = "force-dynamic";
 
@@ -158,6 +159,7 @@ export default async function SettingsPage() {
         <Link href="/privacy" className="btn btn-secondary w-full">
           Privacy
         </Link>
+        <PushOptIn vapidKey={process.env.HEARTH_VAPID_PUBLIC ?? null} />
       </section>
 
       <section className="card flex flex-col gap-3 p-5" aria-labelledby="device-heading">

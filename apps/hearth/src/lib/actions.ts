@@ -321,6 +321,7 @@ export async function sendNote(formData: FormData) {
     member.id,
     text.slice(0, 2000),
   );
+  revalidatePath("/journal");
   revalidatePath("/notes");
 }
 

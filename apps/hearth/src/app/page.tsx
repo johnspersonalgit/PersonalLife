@@ -16,10 +16,8 @@ import { Avatar } from "@/components/avatar";
 import { StreakFlame } from "@/components/flame";
 import { GearIcon, HeartIcon } from "@/components/icons";
 import { NudgeCard } from "@/components/nudge-card";
-import { PushOptIn } from "@/components/push-opt-in";
 import { TabBar } from "@/components/tab-bar";
 import { QuestPath } from "@/components/quest-path";
-import { TodayCard } from "@/components/today-card";
 
 export const dynamic = "force-dynamic";
 
@@ -101,21 +99,6 @@ export default async function Home() {
         coupleCode={couple.code}
         combo={combo}
       />
-
-      {today.complete ? (
-        <div className="px-5">
-          <TodayCard
-            today={today}
-            member={member}
-            partner={partner}
-            coupleCode={couple.code}
-          />
-        </div>
-      ) : null}
-
-      <div className="px-5 pt-4">
-        <PushOptIn vapidKey={process.env.HEARTH_VAPID_PUBLIC ?? null} />
-      </div>
 
       <TabBar active="/" />
     </main>

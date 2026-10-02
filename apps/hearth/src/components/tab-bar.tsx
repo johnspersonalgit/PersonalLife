@@ -1,11 +1,10 @@
 import Link from "next/link";
-import { BookIcon, FlameIcon, HomeIcon, NoteIcon } from "./icons";
+import { FlameIcon, HeartIcon, HomeIcon } from "./icons";
 
 const TABS = [
-  { href: "/", label: "Today", icon: HomeIcon },
-  { href: "/journal", label: "Journal", icon: BookIcon },
-  { href: "/notes", label: "Notes", icon: NoteIcon },
-  { href: "/streak", label: "Streak", icon: FlameIcon },
+  { href: "/", label: "Path", icon: HomeIcon },
+  { href: "/journal", label: "Us", icon: HeartIcon },
+  { href: "/streak", label: "Flame", icon: FlameIcon },
 ];
 
 export function TabBar({ active }: { active: string }) {
@@ -15,7 +14,7 @@ export function TabBar({ active }: { active: string }) {
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       aria-label="Primary"
     >
-      <div className="mx-auto flex max-w-md items-stretch justify-between px-6">
+      <div className="mx-auto flex max-w-md items-stretch justify-between px-10">
         {TABS.map((t) => {
           const isActive = active === t.href;
           return (

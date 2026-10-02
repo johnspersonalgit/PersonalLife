@@ -100,24 +100,27 @@ export function QuestPath({
   const waiting = Boolean(myAnswer) && !current.complete;
   const person = partner?.name ?? "your person";
   const extra = !isCalendarDay(current.day);
+  const unitTitle = CATEGORY_TITLE[current.category] ?? "Today's tiny quest";
 
-  let caption = CATEGORY_TITLE[current.category] ?? "Today's tiny quest";
+  let startKicker = extra ? "Same thread" : "Today's quest";
+  let startTitle = extra
+    ? `Layer ${current.depth} · keep going`
+    : unitTitle;
   if (extra && open && isChestDepth(current.depth)) {
-    caption = "Chest. The thread just got thicker.";
-  } else if (extra && open && current.depth > 0) {
-    caption = "Same thread. One layer down.";
-  } else if (extra && open) {
-    caption = "Keep going. Another tiny quest.";
+    startKicker = "Chest";
+    startTitle = "The thread just opened.";
   } else if (!myAnswer && partnerAnswer) {
-    caption = `${person} sealed an answer. Yours unlocks it.`;
+    startKicker = `${person} sealed`;
+    startTitle = "Yours unlocks it.";
   } else if (!myAnswer && !partner) {
-    caption = "You can do today now. Your person joins when they are ready.";
+    startKicker = "Just you for now";
+    startTitle = "Walk it. They join when ready.";
   } else if (waiting && !partner) {
-    caption = `Sealed. Share ${coupleCode} so they can unlock it.`;
+    startKicker = "Sealed";
+    startTitle = `Share ${coupleCode}`;
   } else if (waiting) {
-    caption = `Sealed. Waiting on ${person}.`;
-  } else if (current.complete) {
-    caption = "You both showed up. The path is open.";
+    startKicker = "Sealed";
+    startTitle = `Waiting on ${person}`;
   }
 
   const calendarToday = calendarDayOf(today.day);
@@ -133,7 +136,7 @@ export function QuestPath({
 
   const rewind =
     visibleDone.at(-1) ?? [...lessons].reverse().find((l) => l.complete);
-  const locked = Array.from({ length: 6 }, (_, i) => ({
+  const locked = Array.from({ length: 3 }, (_, i) => ({
     id: `preview-${i}`,
     lessonId: i === 0 && rewind ? rewind.id : null,
     state: "locked" as const,
@@ -177,7 +180,7 @@ export function QuestPath({
   let y = 108;
   for (const node of nodes) {
     positions.push({ x: WAVE[positions.length % WAVE.length], y });
-    y += ROW + (node.state === "current" ? 62 : 0);
+    y += ROW + (node.state === "current" ? 128 : 0);
   }
   const height = y + 48;
 
@@ -195,7 +198,7 @@ export function QuestPath({
                 id="today-heading"
                 className="mt-1 font-display text-xl leading-snug text-card"
               >
-                {caption}
+                {unitTitle}
               </h1>
             </div>
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-card/15 text-card">
@@ -217,10 +220,10 @@ export function QuestPath({
               points={positions.map((p) => `${p.x},${p.y}`).join(" ")}
               fill="none"
               stroke="#1f2a55"
-              strokeWidth="3.2"
+              strokeWidth="4"
               strokeLinecap="round"
               strokeLinejoin="round"
-              opacity="0.22"
+              opacity="0.34"
             />
           </svg>
 
@@ -284,20 +287,24 @@ export function QuestPath({
                   )}
 
                   {isCurrent && open ? (
-                    <Link
-                      href="/answer"
-                      className={`start-bubble${
-                        label === "CHEST"
-                          ? " start-bubble-chest"
-                          : label === "DEEPER"
-                            ? " start-bubble-deeper"
-                            : ""
-                      }`}
-                      aria-label={label}
-                      data-start-label={label}
-                    >
-                      {label}
-                    </Link>
+                    <div className="start-card" data-start-card="">
+                      <p className="start-card-kicker">{startKicker}</p>
+                      <p className="start-card-title">{startTitle}</p>
+                      <Link
+                        href="/answer"
+                        className={`start-card-btn${
+                          label === "CHEST"
+                            ? " start-bubble-chest"
+                            : label === "DEEPER"
+                              ? " start-bubble-deeper"
+                              : ""
+                        }`}
+                        aria-label={label}
+                        data-start-label={label}
+                      >
+                        {label}
+                      </Link>
+                    </div>
                   ) : null}
 
                   {isCurrent && waiting && partner ? (

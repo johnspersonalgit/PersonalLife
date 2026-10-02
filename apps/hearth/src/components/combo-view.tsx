@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { comboBody, comboTitle, isChestDepth } from "@/lib/thread";
 import { Ember } from "./ember";
+import { JuiceStats } from "./juice-stats";
 
 const EMBERS = [
   { left: "16%", delay: "0s", size: 6 },
@@ -78,6 +79,14 @@ export function ComboView({
       <p className="mt-3 max-w-xs text-sm leading-relaxed text-ink-soft">
         {comboBody(combo, depth)}
       </p>
+
+      <JuiceStats
+        items={[
+          { label: "Combo", value: `x${combo}` },
+          { label: "Layer", value: String(Math.max(1, depth)) },
+          { label: "Thread", value: chest ? "Chest" : "Same" },
+        ]}
+      />
 
       <Link href="/" className="btn btn-primary mt-10 w-full max-w-xs">
         {chest ? "Open the chest" : depth > 0 ? "Go deeper" : "Continue"}

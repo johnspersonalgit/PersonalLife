@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
   getStreak,
@@ -128,6 +129,10 @@ export default async function StreakPage() {
           })}
         </div>
       </section>
+
+      <Link href="/" className="btn btn-primary w-full">
+        Back to the path
+      </Link>
 
       <TabBar active="/streak" />
     </main>

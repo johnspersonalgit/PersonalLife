@@ -107,9 +107,8 @@ await step("05 celebration", async () => {
 });
 
 await step("06 home revealed", async () => {
-  await tap(page.getByRole("link", { name: "Continue" }));
-  await page.waitForSelector("text=Ten more minutes at the table");
-  await page.waitForSelector("text=Same thread. One layer down.");
+  await tap(page.getByRole("link", { name: /Keep going|Continue/ }));
+  await page.waitForSelector("[data-start-card]");
   await page.waitForSelector('[data-start-label="DEEPER"]');
   await settle();
   await shot("hearth-06-home-revealed");
@@ -142,7 +141,7 @@ await step("06c next layer", async () => {
 });
 
 await step("07 journal", async () => {
-  await tapNav("Journal");
+  await tapNav("Us");
   await page.waitForSelector("text=The record that writes itself");
   await settle();
   await shot("hearth-07-journal");
@@ -160,7 +159,6 @@ await step("07b reopen quest", async () => {
 });
 
 await step("08 notes", async () => {
-  await tapNav("Notes");
   await page.getByLabel("Note text").fill("Dinner Friday. I already miss it.");
   await tap(page.getByRole("button", { name: "Send" }));
   await page.waitForSelector("text=Dinner Friday. I already miss it.");
@@ -169,15 +167,16 @@ await step("08 notes", async () => {
 });
 
 await step("09 streak", async () => {
-  await tapNav("Streak");
+  await tapNav("Flame");
   await page.waitForSelector("text=Milestones");
+  await page.waitForSelector("text=Back to the path");
   await settle();
   await shot("hearth-09-streak");
 });
 
 await step("10 settings", async () => {
-  await tapNav("Today");
-  await page.waitForSelector("text=Ten more minutes at the table");
+  await tapNav("Path");
+  await page.waitForSelector("[data-start-card]");
   await tap(page.getByLabel("Settings"));
   await page.waitForSelector("text=Ritual topics");
   await settle();
@@ -186,7 +185,7 @@ await step("10 settings", async () => {
 
 await step("11 home as Partner", async () => {
   await tap(page.getByRole("button", { name: /Switch to Partner/ }));
-  await page.waitForSelector("text=Ten more minutes at the table");
+  await page.waitForSelector("[data-start-card]");
   await settle();
   await shot("hearth-11-home-partner");
 });
