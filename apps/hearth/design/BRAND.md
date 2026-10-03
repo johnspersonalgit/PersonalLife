@@ -82,9 +82,11 @@ The mascot is the full-body clay flame John picked (`public/ember.png`). In-app 
 
 ## Components
 
-- Buttons: pill, 3px ink outline, 6px ink edge, sinks on press. Ember-orange primary, white secondary.
-- Cards: white, 3px ink outline, 6px ink drop shadow.
-- Chips: fat pills, ink outline, display type.
+- Ember is the only clay object. Chrome is cut paper: 2px ink, 3px drop, md radius.
+- The one loud control is the primary button and START: pill, 3px ink, 6px drop, flame fill.
+- Banner is flame, never blue. Blue and rose are people only.
+- Chips are vitality only (streak, grace, combo). No category or kind chips.
+- Questions use display type. Answers use UI type. Serif stays off the path.
 - Motion: Ember float/hop/sway/wiggle. Disabled under reduced motion.
 
 ## Tell list (automatic fail)

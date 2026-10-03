@@ -71,7 +71,7 @@ export function OnboardingFlow() {
           <div className="flex flex-1 flex-col items-center justify-center text-center">
             <Ember mood="happy" size={188} />
             <p className="mt-2 font-display text-5xl text-ink">Hearth</p>
-            <p className="mt-2 font-display text-xl text-rose">
+            <p className="mt-2 font-display text-xl text-ink">
               Two people. One tiny daily quest.
             </p>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink-soft">

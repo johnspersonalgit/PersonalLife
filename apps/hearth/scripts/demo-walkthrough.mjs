@@ -93,7 +93,7 @@ await step("03 home as John", async () => {
 
 await step("04 answer form", async () => {
   await tap(startLink());
-  await page.waitForSelector("text=Today's quest");
+  await page.waitForSelector("text=Today");
   await settle();
   await shot("hearth-04-answer-form");
 });

@@ -4,16 +4,8 @@ import { ensureOpenLesson, getLessonById } from "@/lib/repo";
 import { getPartner, getSessionMember } from "@/lib/session";
 import { BackIcon } from "@/components/icons";
 import { QuestLesson } from "@/components/quest-lesson";
-import { KIND_CHIP } from "@/components/today-card";
 
 export const dynamic = "force-dynamic";
-
-const KIND_LABELS: Record<string, string> = {
-  question: "Question",
-  rapid: "Rapid fire",
-  mission: "Mission",
-  guess: "Guess day",
-};
 
 export default async function AnswerPage() {
   const member = await getSessionMember();
@@ -55,10 +47,6 @@ export default async function AnswerPage() {
         >
           <BackIcon size={20} />
         </Link>
-        <span className="chip">{lesson.category}</span>
-        <span className={`chip ${KIND_CHIP[lesson.kind]}`}>
-          {KIND_LABELS[lesson.kind]}
-        </span>
       </header>
 
       {alreadyDone ? (

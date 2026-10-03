@@ -100,9 +100,9 @@ body {
 
   .card {
     background: var(--color-card);
-    border: 3px solid var(--color-ink);
-    border-radius: var(--radius-lg);
-    box-shadow: 0 6px 0 var(--color-ink);
+    border: 2px solid var(--color-ink);
+    border-radius: var(--radius-md);
+    box-shadow: 0 3px 0 var(--color-ink);
   }
 
   .chip {
@@ -238,10 +238,10 @@ body {
 }
 
 .unit-banner {
-  background: var(--color-blue);
-  border: 3px solid var(--color-ink);
-  border-radius: 1.25rem;
-  box-shadow: 0 6px 0 var(--color-ink);
+  background: var(--color-flame);
+  border: 2px solid var(--color-ink);
+  border-radius: 1rem;
+  box-shadow: 0 3px 0 var(--color-ink);
   padding: 0.9rem 1rem;
 }
 
@@ -252,11 +252,11 @@ body {
   z-index: 20;
   width: 230px;
   transform: translateX(-50%);
-  border: 3px solid var(--color-ink);
-  border-radius: 1.25rem;
+  border: 2px solid var(--color-ink);
+  border-radius: 1rem;
   background: #fff;
   padding: 0.7rem 0.75rem 0.8rem;
-  box-shadow: 0 6px 0 var(--color-ink);
+  box-shadow: 0 3px 0 var(--color-ink);
   text-align: center;
 }
 
@@ -317,12 +317,12 @@ body {
 }
 
 .start-bubble-deeper {
-  background: var(--color-blue);
+  background: var(--color-flame);
   color: #fff8f0;
 }
 
 .start-bubble.start-bubble-deeper::before {
-  background: var(--color-blue);
+  background: var(--color-flame);
 }
 
 .start-bubble::before {

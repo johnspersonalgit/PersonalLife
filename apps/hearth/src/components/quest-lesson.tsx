@@ -104,7 +104,7 @@ function QuestionLesson({
         <Intro
           prompt={prompt}
           blurb={`Five tiny taps. About a minute. ${personName} cannot see yours until they finish too.`}
-          eyebrow={depth > 0 ? "Keep going" : "Today's quest"}
+          eyebrow={depth > 0 ? "Keep going" : "Today"}
           fromPrompt={fromPrompt}
           onContinue={() => setStep("mood")}
         />
@@ -395,7 +395,7 @@ function Intro({
   prompt,
   blurb,
   onContinue,
-  eyebrow = "Today's quest",
+  eyebrow = "Today",
   fromPrompt = null,
 }: {
   prompt: string;

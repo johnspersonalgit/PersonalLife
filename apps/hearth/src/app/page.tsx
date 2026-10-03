@@ -51,7 +51,7 @@ export default async function Home() {
             {streak.graceLeft ? 1 : 0}
           </span>
           {combo > 0 ? (
-            <span className="chip border-ink bg-blue text-card" data-combo="">
+            <span className="chip border-ink bg-flame text-card" data-combo="">
               x{combo}
             </span>
           ) : null}

@@ -6,7 +6,6 @@ import { Avatar, personTint } from "@/components/avatar";
 import { BackIcon } from "@/components/icons";
 import { MoodFace } from "@/components/mood-row";
 import { TabBar } from "@/components/tab-bar";
-import { KIND_CHIP } from "@/components/today-card";
 import { getEchoes, getLessonById, getThread } from "@/lib/repo";
 import { getPartner, getSessionMember } from "@/lib/session";
 import { prettyDay } from "@/lib/time";
@@ -48,8 +47,6 @@ export default async function QuestPage({
         <span className="text-[10px] font-semibold tracking-widest uppercase text-ink-soft">
           {prettyDay(lesson.day)}
         </span>
-        <span className="chip">{lesson.category}</span>
-        <span className={`chip ${KIND_CHIP[lesson.kind]}`}>{lesson.kind}</span>
       </header>
 
       {parent ? (

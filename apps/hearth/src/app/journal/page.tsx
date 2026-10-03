@@ -52,9 +52,8 @@ export default async function JournalPage() {
                     <span className="text-[10px] font-semibold tracking-widest uppercase text-ink-soft">
                       {prettyDay(root.day)}
                     </span>
-                    <span className="chip">{root.category}</span>
                   </div>
-                  <p className="font-serif text-xl leading-snug text-ink italic">
+                  <p className="font-display text-xl leading-snug text-ink">
                     {root.prompt}
                   </p>
                   {root.complete ? (
@@ -83,9 +82,7 @@ export default async function JournalPage() {
                       Sealed. Waiting on {partner?.name ?? "your person"}.
                     </p>
                   ) : (
-                    <p className="text-sm text-ink-soft">
-                      The flame rested this day.
-                    </p>
+                    <p className="text-sm text-ink-soft">No answers this day.</p>
                   )}
                 </Link>
               ) : (
