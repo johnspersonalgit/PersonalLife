@@ -10,7 +10,7 @@ const TABS = [
 export function TabBar({ active }: { active: string }) {
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-20 border-t-[3px] border-ink bg-card"
+      className="fixed inset-x-0 bottom-0 z-20 border-t-2 border-ink bg-card"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       aria-label="Primary"
     >

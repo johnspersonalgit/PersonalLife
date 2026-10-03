@@ -40,18 +40,17 @@ export default async function Home() {
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col pb-28">
-      <header className="sticky top-0 z-30 flex items-center justify-between gap-2 border-b-[3px] border-ink bg-paper/95 px-4 py-2.5 backdrop-blur-sm">
-        <div className="flex items-center gap-2">
-          <span className="chip border-ink bg-flame text-card">
-            <StreakFlame size={14} lit={streak.current > 0} />
-            <span className="font-mono text-xs">{streak.current}</span>
+      <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b-2 border-ink bg-paper px-5 py-3">
+        <div className="flex items-center gap-3">
+          <span className="flex items-center gap-1.5 font-display text-xl text-ink">
+            <StreakFlame size={18} lit={streak.current > 0} />
+            {streak.current}
           </span>
-          <span className="chip">
-            <HeartIcon size={12} />
-            {streak.graceLeft ? 1 : 0}
-          </span>
+          {streak.graceLeft ? (
+            <HeartIcon size={16} className="text-rose" />
+          ) : null}
           {combo > 0 ? (
-            <span className="chip border-ink bg-flame text-card" data-combo="">
+            <span className="font-display text-lg text-flame" data-combo="">
               x{combo}
             </span>
           ) : null}

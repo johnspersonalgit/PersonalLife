@@ -4,9 +4,11 @@ The working brand book for Hearth. Tokens live in `src/app/globals.css`; this fi
 
 ## How to edit this app
 
-Ember is the only clay object. The chrome stays flat and disciplined, like real Duolingo. Do not cartoon every box.
+Home is today's question, Ember, and one START. Not a Duolingo map with a mascot glued on.
 
-Reference shots live at the repo root (`duo-home-2.webp`, `duo-home-3.webp`) and on Mobbin Duolingo iOS path. Steal structure (winding nodes, mascot beside current, START on that node, one banner, vitality strip). Keep Hearth paper/ink/flame/blue/rose. Never Duo green. Never quiet luxury.
+Steal Duo's addiction (streak, keep going after you finish). Do not steal Duo's winding RPG. Past days live on Flame and Us. Today's extras are a short thread under the week strip.
+
+Ember is the only clay object. Chrome is cut paper. Flame is the app. Blue and rose are people only. Never quiet luxury.
 
 Edit loop:
 
