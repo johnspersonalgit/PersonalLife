@@ -85,7 +85,7 @@ await step("03 home as John", async () => {
   await page.getByLabel("Your PIN").fill("1111");
   await tap(page.getByRole("button", { name: "Reconnect" }));
   await page.waitForSelector("[data-start-card]");
-  await page.waitForSelector("text=Yours unlocks it.");
+  await page.waitForSelector("text=/Your turn|Yours unlocks it/");
   await page.waitForSelector("text=START");
   await settle();
   await shot("hearth-03-home-john");
