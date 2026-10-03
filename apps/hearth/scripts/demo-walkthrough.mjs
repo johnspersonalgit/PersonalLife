@@ -86,7 +86,7 @@ await step("03 home as John", async () => {
   await tap(page.getByRole("button", { name: "Reconnect" }));
   await page.waitForSelector("[data-start-card]");
   await page.waitForSelector("text=/Your turn|Yours unlocks it/");
-  await page.waitForSelector("text=START");
+  await page.waitForSelector("text=/^(START|DEEPER)$/");
   await settle();
   await shot("hearth-03-home-john");
 });
@@ -102,7 +102,7 @@ await step("05 celebration", async () => {
   await walkQuestionLesson(
     "Long day but a good one. Your note this morning carried the 3pm meeting. Porch photos looked perfect.",
   );
-  await page.waitForURL("**/celebration**");
+  await page.waitForURL(/\/(celebration|combo)/);
   await settle(2600);
   await shot("hearth-05-celebration");
 });
