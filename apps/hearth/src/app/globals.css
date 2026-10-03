@@ -23,7 +23,6 @@
   --color-blue-soft: #d5e6ff;
   --color-rose: #e056a0;
   --color-rose-soft: #ffd4ec;
-  --color-sky: #7eb6ff;
   --color-crit: #ef4444;
 
   --radius-sm: 0.75rem;
@@ -45,12 +44,6 @@ html {
 
 body {
   background-color: var(--color-paper);
-  background-image:
-    radial-gradient(circle at 8% -6%, #7eb6ff 0 22%, transparent 23%),
-    radial-gradient(circle at 104% 4%, #f7a8d4 0 20%, transparent 21%),
-    radial-gradient(circle at 92% 96%, #ffc48a 0 18%, transparent 19%),
-    radial-gradient(circle at 4% 92%, #c8f3dc 0 14%, transparent 15%);
-  background-attachment: fixed;
   color: var(--color-ink);
   font-family: var(--font-ui);
 }

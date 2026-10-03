@@ -16,10 +16,10 @@ Seeded 2026-10-01 from verified working preferences. Agents: append generalizabl
 
 ## Design taste
 
-- Quiet luxury: warm neutrals, ink type, one metallic accent, editorial serif display type, generous negative space, thin rules, intentional motion.
+- Quiet luxury is the default for a new personal app and for Smith & Oak. Hearth is the exception: cartoon clay, not gold/cream.
 - Motion serves comprehension or desire. Respect reduced motion.
 - Mobile is a first-class surface.
-- AI-slop tells are an automatic fail (see `.cursor/rules/design.mdc`).
+- AI-slop tells are an automatic fail. Hearth uses `apps/hearth/design/BRAND.md`. Other apps use `.cursor/rules/design.mdc`.
 
 ## Personal life
 
@@ -37,3 +37,4 @@ Record preferences here as John states them, one dated line each. Never quote or
 - 2026-10-02: Hearth extras are recursive, not a flat queue. Each sealed quest becomes the parent of the next node. START becomes DEEPER, then CHEST every third layer. Session combo, living units, and a combo splash sit between finishes. Generated extras go one layer deeper into the same thread. Never send sealed answers to the model.
 - 2026-10-02: Recursive review means experience, design, and flow, not another data structure. Home is only the path. Tabs are Path / Us / Flame. Notes fold into Us. Finishes return to a wide START/DEEPER card. Journal groups extras as layers under the day.
 - 2026-10-02: Fake Duo chrome reads as vibe-coded. No Section/Unit/Layer numbers, juice chips, CHEST loot, manifesto copy, or random lesson icons. Banner shows the real question. START/DEEPER only. Star, check, lock.
+- 2026-10-03: Hearth design is edited from pixels, not adjectives. Ember is the only clay object. Chrome stays flat like real Duo. Screenshot at 390, circle tells, change tokens or one component, screenshot again. Do not mix quiet luxury into Hearth. Do not invent a new look.

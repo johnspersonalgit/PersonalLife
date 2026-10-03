@@ -2,9 +2,22 @@
 
 The working brand book for Hearth. Tokens live in `src/app/globals.css`; this file is the intent behind them.
 
+## How to edit this app
+
+Ember is the only clay object. The chrome stays flat and disciplined, like real Duolingo. Do not cartoon every box.
+
+Reference shots live at the repo root (`duo-home-2.webp`, `duo-home-3.webp`) and on Mobbin Duolingo iOS path. Steal structure (winding nodes, mascot beside current, START on that node, one banner, vitality strip). Keep Hearth paper/ink/flame/blue/rose. Never Duo green. Never quiet luxury.
+
+Edit loop:
+
+1. Screenshot the live 390 screen.
+2. Circle tells from the list below.
+3. Change tokens or one component. Stop inventing looks.
+4. Screenshot again and audit. Keep going until the tells are gone.
+
 ## Feeling
 
-Cartoon, whimsical, a little loud. Ember is a clay flame with arms and a smirk, not a luxury object. The app should feel like Duolingo fell in love: chunky ink outlines, hoppy motion, color you can see from across the room. Gold-cream quiet luxury is a fail here.
+Cartoon, whimsical, a little loud. Ember is a clay flame with arms and a smirk, not a luxury object. Color you can see from across the room. Gold-cream quiet luxury is a fail here.
 
 ## Palette (locked)
 
@@ -28,7 +41,6 @@ Cartoon, whimsical, a little loud. Ember is a clay flame with arms and a smirk, 
 | blue-soft | `#d5e6ff` | His tints |
 | rose | `#e056a0` | Hers. Avatar ring, her answers, her notes. |
 | rose-soft | `#ffd4ec` | Her tints |
-| sky | `#7eb6ff` | Background blob |
 | crit | `#ef4444` | Destructive, errors |
 
 No raw hex in components. Ember orange must be the loudest action on every screen.
@@ -37,9 +49,9 @@ No raw hex in components. Ember orange must be the loudest action on every scree
 
 Blue is him. Rose is her. Assigned at join (first seat blue, second seat rose) and never swapped for decoration. Every answer, note, and avatar ring carries the person color so you can read who spoke without reading the name.
 
-### Kind colors (the Duolingo move, warmed)
+### Kind colors
 
-Each activity kind has a signature color, used on its chip and moments of emphasis: question = gold, rapid fire = flame, mission = sage, guess day = plum. Kind colors never replace the gold primary action and never stack two saturated tints on one card.
+Sage, honey, and plum are for rare state (done node, grace, error-adjacent), not a rainbow chip system. Person color and flame already say enough. Do not add a kind chip unless the screen is unreadable without it.
 
 ## Typography
 
@@ -77,14 +89,17 @@ The mascot is the full-body clay flame John picked (`public/ember.png`). In-app 
 
 ## Tell list (automatic fail)
 
-- Purple-to-blue gradients, glow borders, dark mode by default
-- Inter or any generic AI-default face as the brand type
-- Centered hero with a badge above the headline
-- Exactly three feature cards as a page
-- Accent in tokens but invisible on screen
-- Clipped or truncated type left as shipped
-- Placeholder copy or fabricated content presented as real
-- Ember rendered off-palette or with a different face style per screen
+- Corner pastel blobs or wallpaper gradients
+- Quiet luxury gold/cream, thin editorial rules, or metallic accent
+- Fake Duo curriculum: Section/Unit/Layer numbers, CHEST, juice chips, lesson-type icons
+- Manifesto copy (The record that writes itself, Quest complete, Same thread)
+- Kind-color rainbow chips (US / QUESTION / LOAD as decoration)
+- The same 3px ink + 6px drop on every decorative box
+- Purple, sky, or extra hues that are not paper/ink/flame/blue/rose
+- Inter or any generic AI-default face
+- Dead duplicate copy that restates the banner
+- Ember off-palette or a different face style per screen
+- Inventing a new look instead of killing a tell
 
 ## Visual pass
 

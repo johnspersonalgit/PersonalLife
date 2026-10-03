@@ -5,7 +5,9 @@ alwaysApply: true
 
 # Design bar
 
-Design is a trust signal. Cheap or generic screens fail before the content gets a chance. Every surface ships with Quiet Luxury discipline: one coherent palette, editorial type, generous negative space, intentional motion.
+Design is a trust signal. Cheap or generic screens fail before the content gets a chance.
+
+Quiet Luxury is the default for a new app. Once an app has a brand book, that book wins. Hearth follows `apps/hearth/design/BRAND.md`, not this quiet-luxury default. Mixing the two tastes is slop.
 
 ## Per-app foundation (decide once, then stop)
 
@@ -33,6 +35,15 @@ Audit the after-screenshots against this list in the same turn:
 - Mixed colorways on one surface
 - Dead duplicate copy that restates something already on screen
 - Placeholder copy or fabricated data presented as real
+
+## How to edit without slop
+
+Do not restyle from adjectives. Edit from pixels.
+
+1. Lock one real reference for the job (Mobbin or the app's own brand shots). Hearth path: Duolingo home path, not a new look.
+2. Screenshot the live screen at 390 wide. Name the tells on that shot.
+3. Change tokens or one component. Do not invent a second aesthetic.
+4. Screenshot again. If a tell remains, keep going. Do not ask John to coach pixels.
 
 ## Visual pass (mandatory)
 
