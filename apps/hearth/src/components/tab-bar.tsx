@@ -10,7 +10,7 @@ const TABS = [
 export function TabBar({ active }: { active: string }) {
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-20 border-t-2 border-ink bg-card"
+      className="fixed inset-x-0 bottom-0 z-20 border-t border-ink/10 bg-card"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       aria-label="Primary"
     >
@@ -22,7 +22,7 @@ export function TabBar({ active }: { active: string }) {
               key={t.href}
               href={t.href}
               aria-current={isActive ? "page" : undefined}
-              className={`flex flex-col items-center gap-1 px-3 py-2.5 text-[10px] font-semibold tracking-widest uppercase transition-colors ${
+              className={`flex flex-col items-center gap-0.5 px-3 py-2 text-[11px] font-bold transition-colors ${
                 isActive ? "text-flame" : "text-ink-soft hover:text-ink"
               }`}
             >

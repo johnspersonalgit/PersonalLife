@@ -40,9 +40,9 @@ export default async function Home() {
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col pb-28">
-      <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b-2 border-ink bg-paper px-5 py-3">
+      <header className="sticky top-0 z-30 flex items-center justify-between gap-3 bg-paper px-4 py-2.5">
         <div className="flex items-center gap-3">
-          <span className="flex items-center gap-1.5 font-display text-xl text-ink">
+          <span className="flex items-center gap-1 font-display text-lg text-flame">
             <StreakFlame size={18} lit={streak.current > 0} />
             {streak.current}
           </span>

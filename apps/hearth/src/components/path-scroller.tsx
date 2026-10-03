@@ -10,7 +10,7 @@ export function PathScroller({ children }: { children: ReactNode }) {
       ref.current?.querySelector("[data-current-node]") ??
       ref.current?.querySelector("[data-today-node]");
     if (!(node instanceof HTMLElement)) return;
-    const header = 210;
+    const header = 248;
     const top = node.getBoundingClientRect().top + window.scrollY - header;
     window.scrollTo({ top: Math.max(0, top), behavior: "auto" });
   }, []);
