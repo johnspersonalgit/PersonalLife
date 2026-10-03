@@ -4,7 +4,13 @@ import { useState, useTransition } from "react";
 import { sendNudge } from "@/lib/actions";
 import { HeartIcon } from "./icons";
 
-export function NudgeButton({ partnerName }: { partnerName: string }) {
+export function NudgeButton({
+  partnerName,
+  compact = false,
+}: {
+  partnerName: string;
+  compact?: boolean;
+}) {
   const [sent, setSent] = useState(false);
   const [pending, startTransition] = useTransition();
 
@@ -18,7 +24,7 @@ export function NudgeButton({ partnerName }: { partnerName: string }) {
           setSent(true);
         })
       }
-      className="btn btn-secondary w-full"
+      className={compact ? "start-nudge" : "btn btn-secondary w-full"}
     >
       <HeartIcon size={16} />
       {sent ? `Sent to ${partnerName}` : `Send ${partnerName} a thinking-of-you`}

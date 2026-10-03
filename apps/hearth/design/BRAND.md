@@ -4,9 +4,9 @@ The working brand book for Hearth. Tokens live in `src/app/globals.css`; this fi
 
 ## How to edit this app
 
-Home is the Duolingo path, in Hearth clothes. Locked reference: Mobbin Duolingo iOS path and `duo-home-2.webp`.
+Home is the Duolingo path, in Hearth clothes. Locked reference: Mobbin Duolingo iOS path, especially [the START-on-node home](https://mobbin.com/screens/fd077091-e8e9-413f-9aff-bb68984e5b04) and the files in `design/refs/`.
 
-Copy the craft: S-curve of 3D circles, no diagram line, mascot beside the current node, START as a speech card on that node, brand-colored unit banner, vitality strip. Do not copy Section/Unit numbers, lesson-type icons, chests, or XP.
+Copy the craft: S-curve of 3D circles, no diagram line, mascot beside the current node, START as a tiny white chip on that node, flush brand-colored unit banner, vitality strip. Do not copy Section/Unit numbers, lesson-type icons, chests, or XP. The current node is the button. A fat CTA card under the node is an automatic fail.
 
 Ember is the only clay object. Flame is the path color. Blue and rose are people only. Never a centered hero with a full-width CTA. Never quiet luxury.
 
@@ -85,8 +85,9 @@ The mascot is the full-body clay flame John picked (`public/ember.png`). In-app 
 ## Components
 
 - Ember is the only clay object. Chrome is cut paper: 2px ink, 3px drop, md radius.
-- The one loud control is the primary button and START: pill, 3px ink, 6px drop, flame fill.
-- Banner is flame, never blue. Blue and rose are people only.
+- The one loud control off the path is the primary button: pill, 3px ink, 6px drop, flame fill.
+- On the path, START/DEEPER is a tiny white chip sitting on the current 3D node. The node itself is the hit target.
+- Banner is a flush flame slab, never a floating card. Blue and rose are people only.
 - Chips are vitality only (streak, grace, combo). No category or kind chips.
 - Questions use display type. Answers use UI type. Serif stays off the path.
 - Motion: Ember float/hop/sway/wiggle. Disabled under reduced motion.
@@ -102,6 +103,8 @@ The mascot is the full-body clay flame John picked (`public/ember.png`). In-app 
 - Purple, sky, or extra hues that are not paper/ink/flame/blue/rose
 - Inter or any generic AI-default face
 - Dead duplicate copy that restates the banner
+- A fat START card, speech-bubble CTA, or "Your turn" coaching on the path
+- Flat discs instead of 3D nodes, or a centered hero with a full-width button
 - Ember off-palette or a different face style per screen
 - Inventing a new look instead of killing a tell
 

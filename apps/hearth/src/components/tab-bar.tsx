@@ -22,11 +22,11 @@ export function TabBar({ active }: { active: string }) {
               key={t.href}
               href={t.href}
               aria-current={isActive ? "page" : undefined}
-              className={`flex flex-col items-center gap-0.5 px-3 py-2 text-[11px] font-bold transition-colors ${
+              className={`flex flex-col items-center gap-0.5 px-3 py-2.5 text-[10px] font-bold transition-colors ${
                 isActive ? "text-flame" : "text-ink-soft hover:text-ink"
               }`}
             >
-              <t.icon size={22} />
+              <t.icon size={24} />
               {t.label}
             </Link>
           );
